@@ -16,8 +16,9 @@ import android.widget.ImageView;
 
 /**
  * Base View to manage image zoom/scrool/pinch operations
+ * 
  * @author alessandro
- *
+ * 
  */
 public class ImageViewTouchBase extends ImageView implements IDisposable {
 
@@ -99,14 +100,49 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		setImageBitmap( bm, true );
 	}
 
+	/**
+	 * Set the new image to display and reset the internal matrix.
+	 * 
+	 * @param bitmap
+	 *           - the {@link Bitmap} to display
+	 * @param reset
+	 *           - if true the image bounds will be recreated, otherwise the old {@link Matrix} is used to display the new bitmap
+	 * @see #setImageBitmap(Bitmap)
+	 */
 	public void setImageBitmap( final Bitmap bitmap, final boolean reset ) {
 		setImageBitmap( bitmap, reset, null );
 	}
 
+	/**
+	 * Similar to {@link #setImageBitmap(Bitmap, boolean)} but an optional view {@link Matrix} can be passed to determine the new
+	 * bitmap view matrix.<br />
+	 * This method is useful if you need to restore a Bitmap with the same zoom/pan values from a previous state
+	 * 
+	 * @param bitmap
+	 *           - the {@link Bitmap} to display
+	 * @param reset
+	 * @param matrix
+	 *           - the {@link Matrix} to be used to display the new bitmap
+	 * 
+	 * @see #setImageBitmap(Bitmap, boolean)
+	 * @see #setImageBitmap(Bitmap)
+	 * @see #getImageViewMatrix()
+	 * @see #getDisplayMatrix()
+	 */
 	public void setImageBitmap( final Bitmap bitmap, final boolean reset, Matrix matrix ) {
 		setImageBitmap( bitmap, reset, matrix, -1 );
 	}
 
+	/**
+	 * 
+	 * @param bitmap
+	 * @param reset
+	 * @param matrix
+	 * @param maxZoom
+	 *           - maximum zoom allowd during zoom gestures
+	 * 
+	 * @see #setImageBitmap(Bitmap, boolean, Matrix)
+	 */
 	public void setImageBitmap( final Bitmap bitmap, final boolean reset, Matrix matrix, float maxZoom ) {
 
 		Log.i( LOG_TAG, "setImageBitmap: " + bitmap );
@@ -199,6 +235,12 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		return mDisplayMatrix;
 	}
 
+	/**
+	 * Returns the current image display matrix. This matrix can be used in the next call to the
+	 * {@link #setImageBitmap(Bitmap, boolean, Matrix)} to restore the same view state of the previous {@link Bitmap}
+	 * 
+	 * @return
+	 */
 	public Matrix getDisplayMatrix() {
 		return new Matrix( mSuppMatrix );
 	}

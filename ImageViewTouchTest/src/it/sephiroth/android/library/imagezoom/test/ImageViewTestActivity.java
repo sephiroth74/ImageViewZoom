@@ -53,7 +53,7 @@ public class ImageViewTestActivity extends Activity {
 				Bitmap bitmap = DecodeUtils.decode( this, imageUri, 1024, 1024 );
 				if( null != bitmap )
 				{
-					mImage.setImageBitmap( bitmap, true );
+					mImage.setImageBitmap( bitmap );
 				} else {
 					Toast.makeText( this, "Failed to load the image", Toast.LENGTH_LONG ).show();
 				}
