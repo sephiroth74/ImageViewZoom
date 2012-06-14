@@ -14,5 +14,6 @@ Beside the superclass **setImageBitmap** method it offers the following methods:
 
 
 If you want to load a new Bitmap with a particular zoom/pan state (let's say the same from another imageview ), you can call:
-> Matrix matrix = mImageView1.getDisplayMatrix();
-> mImageView2.setImageBitmap( bitmap, true, matrix );
+
+	Matrix matrix = mImageView1.getDisplayMatrix();
+	mImageView2.setImageBitmap( bitmap, true, matrix );
