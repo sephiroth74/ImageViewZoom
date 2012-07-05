@@ -99,6 +99,11 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	public void setImageBitmap( Bitmap bm ) {
 		setImageBitmap( bm, true );
 	}
+	
+	@Override
+	public void setImageResource( int resId ) {
+		setImageDrawable( getContext().getResources().getDrawable( resId ) );
+	}
 
 	/**
 	 * Set the new image to display and reset the internal matrix.
