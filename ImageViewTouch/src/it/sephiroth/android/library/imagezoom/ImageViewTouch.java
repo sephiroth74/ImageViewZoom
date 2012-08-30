@@ -23,9 +23,11 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	protected int mDoubleTapDirection;
 	protected OnGestureListener mGestureListener;
 	protected OnScaleGestureListener mScaleListener;
-	protected boolean mDoubleTapEnabled = true;
+	protected boolean mDoubleTapToZoomEnabled = true;
 	protected boolean mScaleEnabled = true;
 	protected boolean mScrollEnabled = true;
+
+    private OnImageViewTouchDoubleTapListener doubleTapListener;
 
 	public ImageViewTouch( Context context, AttributeSet attrs ) {
 		super( context, attrs );
@@ -45,8 +47,12 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		mDoubleTapDirection = 1;
 	}
 
-	public void setDoubleTapEnabled( boolean value ) {
-		mDoubleTapEnabled = value;
+    public void setDoubleTapListener( OnImageViewTouchDoubleTapListener doubleTapListener ){
+        this.doubleTapListener = doubleTapListener;
+    }
+
+	public void setDoubleTapToZoomEnabled( boolean value ) {
+		mDoubleTapToZoomEnabled = value;
 	}
 
 	public void setScaleEnabled( boolean value ) {
@@ -58,7 +64,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	}
 
 	public boolean getDoubleTapEnabled() {
-		return mDoubleTapEnabled;
+		return mDoubleTapToZoomEnabled;
 	}
 
 	protected OnGestureListener getGestureListener() {
@@ -123,8 +129,8 @@ public class ImageViewTouch extends ImageViewTouchBase {
 
 		@Override
 		public boolean onDoubleTap( MotionEvent e ) {
-			Log.i( LOG_TAG, "onDoubleTap. double tap enabled? " + mDoubleTapEnabled );
-			if ( mDoubleTapEnabled ) {
+			Log.i( LOG_TAG, "onDoubleTap. double tap enabled? " + mDoubleTapToZoomEnabled);
+			if (mDoubleTapToZoomEnabled) {
 				float scale = getScale();
 				float targetScale = scale;
 				targetScale = onDoubleTapPost( scale, getMaxZoom() );
@@ -132,7 +138,12 @@ public class ImageViewTouch extends ImageViewTouchBase {
 				mCurrentScaleFactor = targetScale;
 				zoomTo( targetScale, e.getX(), e.getY(), 200 );
 				invalidate();
-			}
+            }
+
+            if( null != doubleTapListener ){
+                doubleTapListener.onDoubleTap();
+            }
+
 			return super.onDoubleTap( e );
 		}
 
@@ -195,4 +206,8 @@ public class ImageViewTouch extends ImageViewTouchBase {
 			return false;
 		}
 	}
+
+    public interface OnImageViewTouchDoubleTapListener {
+        void onDoubleTap();
+    }
 }
