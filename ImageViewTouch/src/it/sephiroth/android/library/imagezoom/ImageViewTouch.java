@@ -36,7 +36,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	@Override
 	protected void init() {
 		super.init();
-		mTouchSlop = ViewConfiguration.getTouchSlop();
+		mTouchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
 		mGestureListener = getGestureListener();
 		mScaleListener = getScaleListener();
 
