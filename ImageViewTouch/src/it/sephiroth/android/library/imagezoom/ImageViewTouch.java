@@ -2,6 +2,8 @@ package it.sephiroth.android.library.imagezoom;
 
 import android.content.Context;
 import android.graphics.Matrix;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -14,6 +16,7 @@ import android.view.ViewConfiguration;
 
 public class ImageViewTouch extends ImageViewTouchBase {
 
+	private static final float SCROLL_DELTA_THRESHOLD = 1.0f;
 	static final float MIN_ZOOM = 0.9f;
 	protected ScaleGestureDetector mScaleDetector;
 	protected GestureDetector mGestureDetector;
@@ -124,7 +127,31 @@ public class ImageViewTouch extends ImageViewTouchBase {
 			return 1f;
 		}
 	}
-
+	
+	/**
+	 * Determines whether this ImageViewTouch can be scrolled.
+	 * @param direction
+	 * 				- positive direction value means scroll from right to left, 
+	 * 				negative value means scroll from left to right
+	 * 
+	 * @return true if there is some more place to scroll, false - otherwise.
+	 */
+	public boolean canScroll(int direction) {
+		RectF bitmapRect = getBitmapRect();
+		updateRect(bitmapRect, mScrollRect);
+		Rect imageViewRect = new Rect();
+		getGlobalVisibleRect(imageViewRect);
+		
+		if (bitmapRect.right >= imageViewRect.right) {
+			if (direction < 0) {
+				return Math.abs(bitmapRect.right - imageViewRect.right) > SCROLL_DELTA_THRESHOLD;
+			}
+		}
+		
+		double bitmapScrollRectDelta = Math.abs(bitmapRect.left - mScrollRect.left);
+		return bitmapScrollRectDelta > SCROLL_DELTA_THRESHOLD;
+	}
+	
 	public class GestureListener extends GestureDetector.SimpleOnGestureListener {
 
 		@Override
