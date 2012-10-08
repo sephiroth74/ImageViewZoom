@@ -226,7 +226,23 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 
 		float fw = (float) drawable.getIntrinsicWidth() / (float) mThisWidth;
 		float fh = (float) drawable.getIntrinsicHeight() / (float) mThisHeight;
-		float max = Math.max( fw, fh ) * 4;
+		
+//		float lim, oth;
+//		if (fw < fh) {
+//		    lim = fw;
+//		    oth = fh;
+//		} else {
+//		    lim = fh;
+//		    oth = fw;
+//		}
+//		
+//		oth = oth * (1.0f/lim);
+////		float lim = Math.min()
+////		if (fh < 1) {
+////		    fw = fw * (1.0f/fh);
+////		    fh = 1.0f;
+////		}
+		float max = (1.0f / Math.min( fw, fh )) * 4;
 		return max;
 	}
 
@@ -381,16 +397,27 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	protected void zoomTo( float scale ) {
 		float cx = getWidth() / 2F;
 		float cy = getHeight() / 2F;
-		zoomTo( scale, cx, cy );
+		doZoomTo( scale, cx, cy );
 	}
 
 	public void zoomTo( float scale, float durationMs ) {
 		float cx = getWidth() / 2F;
 		float cy = getHeight() / 2F;
-		zoomTo( scale, cx, cy, durationMs );
+		doZoomTo(scale, cx, cy, durationMs);
+//		doZoomTo( scale, cx, cy, durationMs );
 	}
 
-	protected void zoomTo( float scale, float centerX, float centerY ) {
+    public void zoomTo( float scale, float imageCx, float imageCy, float durationMs ) {
+        zoomTo( scale, durationMs );
+        Matrix m = getImageViewMatrix();
+//        mBitmapRect.set( 0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight() );
+        float[] pt = new float[] {imageCx, imageCy};
+        m.mapPoints(pt);
+
+        panBy(pt[1], pt[0]);
+    }
+
+	protected void doZoomTo( float scale, float centerX, float centerY ) {
 		// Log.i(LOG_TAG, "zoomTo");
 
 		if ( scale > mMaxZoom ) scale = mMaxZoom;
@@ -402,6 +429,31 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	}
 
 	protected void onZoom( float scale ) {}
+
+	/**
+	 * Center on a specific coordinate in the image.
+	 * 
+	 * This method uses image-based coordinates, with 0,0 at the top left of the image.  It is scale agnostic.
+	 * 
+	 */
+	public void centerOn( float x, float y ) {
+        Drawable d = getDrawable();
+        if (d == null) {
+            return; //nothing to do
+        }
+	    //get the bitmap rect, which represents the rectangle of the view at the specified scale
+	    //NOTE: this currently has no relation to the actual bitmap...we will provide that relation in this method
+        RectF rect = getBitmapRect();
+        //determine the centerX and centerY of the bitmap rect
+        float viewCenterX  = (rect.right  - rect.left)/2;
+        float viewCenterY  = (rect.bottom - rect.top)/2;
+        
+        //NOTE: postTranslate expects - numbers to pull the image right and + to pull it left
+        float xp = viewCenterX - (x / d.getIntrinsicWidth())  * (rect.right - rect.left); //-rect.left - (x * viewCenterX / imageCenterX);
+        //NOTE: postTranslate expects - numbers to pull the image down, and + to pull it up
+        float yp = viewCenterY - (y / d.getIntrinsicHeight()) * (rect.bottom - rect.top); //yp =  rect.top  + (y * viewCenterY / imageCenterY);
+	    postTranslate(xp, yp);
+	}
 
 	public void scrollBy( float x, float y ) {
 		panBy( x, y );
@@ -457,26 +509,30 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		} );
 	}
 
-	protected void zoomTo( float scale, final float centerX, final float centerY, final float durationMs ) {
+	protected void doZoomTo( float scale, final float centerX, final float centerY, final float durationMs ) {
 		// Log.i( LOG_TAG, "zoomTo: " + scale + ", " + centerX + ": " + centerY );
 		final long startTime = System.currentTimeMillis();
 		final float incrementPerMs = ( scale - getScale() ) / durationMs;
 		final float oldScale = getScale();
-		mHandler.post( new Runnable() {
-
-			@Override
-			public void run() {
-				long now = System.currentTimeMillis();
-				float currentMs = Math.min( durationMs, now - startTime );
-				float target = oldScale + ( incrementPerMs * currentMs );
-				zoomTo( target, centerX, centerY );
-				if ( currentMs < durationMs ) {
-					mHandler.post( this );
-				} else {
-					// if ( getScale() < 1f ) {}
-				}
-			}
-		} );
+		if (durationMs == 0) {
+		    doZoomTo(scale, centerX, centerY);
+		} else {
+    		mHandler.post( new Runnable() {
+    
+    			@Override
+    			public void run() {
+    				long now = System.currentTimeMillis();
+    				float currentMs = Math.min( durationMs, now - startTime );
+    				float target = oldScale + ( incrementPerMs * currentMs );
+    				doZoomTo( target, centerX, centerY );
+    				if ( currentMs < durationMs ) {
+    					mHandler.post( this );
+    				} else {
+    					// if ( getScale() < 1f ) {}
+    				}
+    			}
+    		} );
+		}
 	}
 
 	@Override
