@@ -1,5 +1,5 @@
-ImageViewZoom
-=============
+##ImageViewZoom
+
 
 Android ImageView widget with zoom and pan capabilities.
 This is an implementation of the ImageView widget used in the Gallery app of the Android opensource project.
@@ -17,3 +17,10 @@ If you want to load a new Bitmap with a particular zoom/pan state (let's say the
 
 	Matrix matrix = mImageView1.getDisplayMatrix();
 	mImageView2.setImageBitmap( bitmap, true, matrix );
+
+
+
+##LICENSE
+
+This software is provided under the MIT license:<br />
+http://opensource.org/licenses/mit-license.php
