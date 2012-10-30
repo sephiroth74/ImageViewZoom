@@ -18,6 +18,9 @@ If you want to load a new Bitmap with a particular zoom/pan state (let's say the
 	Matrix matrix = mImageView1.getDisplayMatrix();
 	mImageView2.setImageBitmap( bitmap, true, matrix );
 
+If **setFitToScreen(true)** is called before any setImage* methods, then the image loaded will be stretch to fit the screen.
+
+Added the method **setMinZoom(float)**. Must be called before any setImage* methods.
 
 
 ##LICENSE

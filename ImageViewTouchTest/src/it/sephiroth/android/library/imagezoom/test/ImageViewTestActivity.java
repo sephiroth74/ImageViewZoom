@@ -50,10 +50,12 @@ public class ImageViewTestActivity extends Activity {
 				long id = c.getLong( c.getColumnIndex( Images.Media._ID ) );
 
 				Uri imageUri = Uri.parse( Images.Media.EXTERNAL_CONTENT_URI + "/" + id );
-				Bitmap bitmap = DecodeUtils.decode( this, imageUri, 1024, 1024 );
+				Bitmap bitmap = DecodeUtils.decode( this, imageUri, 1280, 1280 );
 				if( null != bitmap )
 				{
-					mImage.setImageBitmap( bitmap );
+					//mImage.setMinZoom( 1.5f ); // you can set the minimum zoom of the image ( must be called before anything else )
+					//mImage.setFitToScreen( true ); // calling this will force the image to fit the ImageView container width/height
+					mImage.setImageBitmap( bitmap, true, null, 5.0f );
 				} else {
 					Toast.makeText( this, "Failed to load the image", Toast.LENGTH_LONG ).show();
 				}

@@ -29,17 +29,20 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 
 	public static final String LOG_TAG = "image";
 
+	protected static final float MIN_ZOOM = 0.9f;
 	protected Easing mEasing = new Cubic();
 	protected Matrix mBaseMatrix = new Matrix();
 	protected Matrix mSuppMatrix = new Matrix();
 	protected Handler mHandler = new Handler();
 	protected Runnable mOnLayoutRunnable = null;
 	protected float mMaxZoom;
+	protected float mMinZoom = -1;
 	protected final Matrix mDisplayMatrix = new Matrix();
 	protected final float[] mMatrixValues = new float[9];
 	protected int mThisWidth = -1, mThisHeight = -1;
 	protected boolean mFitToScreen = false;
 	final protected float MAX_ZOOM = 2.0f;
+	final protected int DEFAULT_ANIMATION_DURATION = 200;
 
 	protected RectF mBitmapRect = new RectF();
 	protected RectF mCenterRect = new RectF();
@@ -76,6 +79,11 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		}
 	}
 
+	public void setMinZoom( float value ) {
+		Log.d( LOG_TAG, "minZoom: " + value );
+		mMinZoom = value;
+	}
+
 	@Override
 	protected void onLayout( boolean changed, int left, int top, int right, int bottom ) {
 		super.onLayout( changed, left, top, right, bottom );
@@ -87,11 +95,15 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 			r.run();
 		}
 		if ( getDrawable() != null ) {
-			if ( mFitToScreen )
+			if ( mFitToScreen ) {
 				getProperBaseMatrix2( getDrawable(), mBaseMatrix );
-			else
+				setMinZoom( 1.0f );
+			} else {
 				getProperBaseMatrix( getDrawable(), mBaseMatrix );
+				setMinZoom( getMinZoom() );
+			}
 			setImageMatrix( getImageViewMatrix() );
+			zoomTo( getMinZoom() );
 		}
 	}
 
@@ -99,6 +111,7 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	public void setImageBitmap( Bitmap bm ) {
 		setImageBitmap( bm, true );
 	}
+	
 	
 	@Override
 	public void setImageResource( int resId ) {
@@ -113,7 +126,7 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	 * @param reset
 	 *           - if true the image bounds will be recreated, otherwise the old {@link Matrix} is used to display the new bitmap
 	 * @see #setImageBitmap(Bitmap)
-	 */
+	 */	
 	public void setImageBitmap( final Bitmap bitmap, final boolean reset ) {
 		setImageBitmap( bitmap, reset, null );
 	}
@@ -150,8 +163,6 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	 */
 	public void setImageBitmap( final Bitmap bitmap, final boolean reset, Matrix matrix, float maxZoom ) {
 
-		Log.i( LOG_TAG, "setImageBitmap: " + bitmap );
-
 		if ( bitmap != null )
 			setImageDrawable( new FastBitmapDrawable( bitmap ), reset, matrix, maxZoom );
 		else
@@ -184,10 +195,13 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	protected void _setImageDrawable( final Drawable drawable, final boolean reset, final Matrix initial_matrix, final float maxZoom ) {
 
 		if ( drawable != null ) {
-			if ( mFitToScreen )
+			if ( mFitToScreen ) {
 				getProperBaseMatrix2( drawable, mBaseMatrix );
-			else
+				setMinZoom( getScale( mBaseMatrix ) );
+			} else {
 				getProperBaseMatrix( drawable, mBaseMatrix );
+				setMinZoom( getMinZoom() );
+			}
 			super.setImageDrawable( drawable );
 		} else {
 			mBaseMatrix.reset();
@@ -217,6 +231,11 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		}
 	}
 
+	/**
+	 * compute the max allowed zoom fator
+	 * 
+	 * @return
+	 */
 	protected float maxZoom() {
 		final Drawable drawable = getDrawable();
 
@@ -230,13 +249,31 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		return max;
 	}
 
+	protected float minZoom() {
+		return 1F;
+	}
+
 	public float getMaxZoom() {
+		if ( mMaxZoom < 1 ) {
+			mMaxZoom = maxZoom();
+		}
 		return mMaxZoom;
 	}
 
+	public float getMinZoom() {
+		if ( mMinZoom < 0 ) {
+			mMinZoom = minZoom();
+		}
+		return mMinZoom;
+	}
+
 	public Matrix getImageViewMatrix() {
+		return getImageViewMatrix( mSuppMatrix );
+	}
+
+	public Matrix getImageViewMatrix( Matrix supportMatrix ) {
 		mDisplayMatrix.set( mBaseMatrix );
-		mDisplayMatrix.postConcat( mSuppMatrix );
+		mDisplayMatrix.postConcat( supportMatrix );
 		return mDisplayMatrix;
 	}
 
@@ -257,6 +294,7 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	 * @param matrix
 	 */
 	protected void getProperBaseMatrix( Drawable drawable, Matrix matrix ) {
+		Log.i( LOG_TAG, "getProperBaseMatrix" );
 		float viewWidth = getWidth();
 		float viewHeight = getHeight();
 		float w = drawable.getIntrinsicWidth();
@@ -267,6 +305,7 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 			float widthScale = Math.min( viewWidth / w, 2.0f );
 			float heightScale = Math.min( viewHeight / h, 2.0f );
 			float scale = Math.min( widthScale, heightScale );
+			Log.d( LOG_TAG, "scale: " + scale );
 			matrix.postScale( scale, scale );
 			float tw = ( viewWidth - w * scale ) / 2.0f;
 			float th = ( viewHeight - h * scale ) / 2.0f;
@@ -275,6 +314,7 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 			float tw = ( viewWidth - w ) / 2.0f;
 			float th = ( viewHeight - h ) / 2.0f;
 			matrix.postTranslate( tw, th );
+			Log.d( LOG_TAG, "scale: null" );
 		}
 	}
 
@@ -303,10 +343,14 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	}
 
 	protected RectF getBitmapRect() {
+		return getBitmapRect( mSuppMatrix );
+	}
+
+	protected RectF getBitmapRect( Matrix supportMatrix ) {
 		final Drawable drawable = getDrawable();
 
 		if ( drawable == null ) return null;
-		Matrix m = getImageViewMatrix();
+		Matrix m = getImageViewMatrix( supportMatrix );
 		mBitmapRect.set( 0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight() );
 		m.mapRect( mBitmapRect );
 		return mBitmapRect;
@@ -325,22 +369,23 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	}
 
 	protected void center( boolean horizontal, boolean vertical ) {
-		// Log.i(LOG_TAG, "center");
 		final Drawable drawable = getDrawable();
 
 		if ( drawable == null ) return;
-		RectF rect = getCenter( horizontal, vertical );
+		RectF rect = getCenter( mSuppMatrix, horizontal, vertical );
 		if ( rect.left != 0 || rect.top != 0 ) {
+			Log.d( LOG_TAG, "center.rect: " + rect.left + "x" + rect.top );
 			postTranslate( rect.left, rect.top );
 		}
 	}
 
-	protected RectF getCenter( boolean horizontal, boolean vertical ) {
+	protected RectF getCenter( Matrix supportMatrix, boolean horizontal, boolean vertical ) {
 		final Drawable drawable = getDrawable();
 
 		if ( drawable == null ) return new RectF( 0, 0, 0, 0 );
 
-		RectF rect = getBitmapRect();
+		mCenterRect.set( 0, 0, 0, 0 );
+		RectF rect = getBitmapRect( supportMatrix );
 		float height = rect.height();
 		float width = rect.width();
 		float deltaX = 0, deltaY = 0;
@@ -391,17 +436,18 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	}
 
 	protected void zoomTo( float scale, float centerX, float centerY ) {
-		// Log.i(LOG_TAG, "zoomTo");
-
 		if ( scale > mMaxZoom ) scale = mMaxZoom;
 		float oldScale = getScale();
 		float deltaScale = scale / oldScale;
+		Log.d( LOG_TAG, "zoomTo: " + scale + ", center: " + centerX + "x" + centerY );
 		postScale( deltaScale, centerX, centerY );
 		onZoom( getScale() );
 		center( true, true );
 	}
 
 	protected void onZoom( float scale ) {}
+
+	protected void onZoomAnimationCompleted( float scale ) {}
 
 	public void scrollBy( float x, float y ) {
 		panBy( x, y );
@@ -426,7 +472,6 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 			scrollRect.top = (int) ( ( height - 0 ) - bitmapRect.bottom );
 		if ( bitmapRect.left + scrollRect.left >= 0 ) scrollRect.left = (int) ( 0 - bitmapRect.left );
 		if ( bitmapRect.right + scrollRect.left <= ( width - 0 ) ) scrollRect.left = (int) ( ( width - 0 ) - bitmapRect.right );
-		// Log.d( LOG_TAG, "scrollRect(2): " + scrollRect.toString() );
 	}
 
 	protected void scrollBy( float distanceX, float distanceY, final double durationMs ) {
@@ -450,30 +495,40 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 				if ( currentMs < durationMs ) {
 					mHandler.post( this );
 				} else {
-					RectF centerRect = getCenter( true, true );
+					RectF centerRect = getCenter( mSuppMatrix, true, true );
 					if ( centerRect.left != 0 || centerRect.top != 0 ) scrollBy( centerRect.left, centerRect.top );
 				}
 			}
 		} );
 	}
 
-	protected void zoomTo( float scale, final float centerX, final float centerY, final float durationMs ) {
-		// Log.i( LOG_TAG, "zoomTo: " + scale + ", " + centerX + ": " + centerY );
+	protected void zoomTo( float scale, float centerX, float centerY, final float durationMs ) {
+		if ( scale > getMaxZoom() ) scale = getMaxZoom();
 		final long startTime = System.currentTimeMillis();
-		final float incrementPerMs = ( scale - getScale() ) / durationMs;
 		final float oldScale = getScale();
+
+		final float deltaScale = scale - oldScale;
+
+		Matrix m = new Matrix( mSuppMatrix );
+		m.postScale( scale, scale, centerX, centerY );
+		RectF rect = getCenter( m, true, true );
+
+		final float destX = centerX + rect.left * scale;
+		final float destY = centerY + rect.top * scale;
+
 		mHandler.post( new Runnable() {
 
 			@Override
 			public void run() {
 				long now = System.currentTimeMillis();
 				float currentMs = Math.min( durationMs, now - startTime );
-				float target = oldScale + ( incrementPerMs * currentMs );
-				zoomTo( target, centerX, centerY );
+				float newScale = (float) mEasing.easeInOut( currentMs, 0, deltaScale, durationMs );
+				zoomTo( oldScale + newScale, destX, destY );
 				if ( currentMs < durationMs ) {
 					mHandler.post( this );
 				} else {
-					// if ( getScale() < 1f ) {}
+					onZoomAnimationCompleted( getScale() );
+					center( true, true );
 				}
 			}
 		} );
