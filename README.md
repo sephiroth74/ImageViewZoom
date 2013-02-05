@@ -22,6 +22,13 @@ If **setFitToScreen(true)** is called before any setImage* methods, then the ima
 
 Added the method **setMinZoom(float)**. Must be called before any setImage* methods.
 
+##Usage (Maven)
+    <dependency>
+        <groupId>it.sephiroth.android.library.imagezoom</groupId>
+        <artifactId>image-view-zoom</artifactId>
+        <version>1.0.0</version>
+        <type>apklib</type>
+    </dependency>
 
 ##LICENSE
 
