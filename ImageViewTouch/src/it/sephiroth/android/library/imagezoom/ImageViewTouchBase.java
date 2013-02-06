@@ -462,6 +462,9 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	}
 
 	protected void updateRect( RectF bitmapRect, RectF scrollRect ) {
+        if( bitmapRect==null )
+            return;
+
 		float width = getWidth();
 		float height = getHeight();
 
