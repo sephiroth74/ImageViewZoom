@@ -24,27 +24,33 @@ import android.widget.ImageView;
 public class ImageViewTouchBase extends ImageView implements IDisposable {
 
 	public interface OnBitmapChangedListener {
-
 		void onBitmapChanged( Drawable drawable );
+	};
+	
+	public enum ScaleType {
+		Normal, FitToScreen,
 	};
 
 	public static final String LOG_TAG = "image";
+	
+	protected static final float ZOOM_INVALID = -1f;
 
 	protected Easing mEasing = new Cubic();
 	protected Matrix mBaseMatrix = new Matrix();
 	protected Matrix mSuppMatrix = new Matrix();
+	protected Matrix mNextMatrix;
 	protected Handler mHandler = new Handler();
-	protected Runnable mOnLayoutRunnable = null;
-	protected float mMaxZoom = 0;
-	protected float mMinZoom = 1.0f;
+	protected Runnable mLayoutRunnable = null;
+	protected float mMaxZoom = ZOOM_INVALID;
+	protected float mMinZoom = ZOOM_INVALID;
 	protected final Matrix mDisplayMatrix = new Matrix();
 	protected final float[] mMatrixValues = new float[9];
 	protected int mThisWidth = -1, mThisHeight = -1;
-	protected boolean mFitToScreen = false;
-	protected boolean mFitToScreenChanged = false;
-	protected boolean mBitmapChanged = false;
+	
+	protected ScaleType mScaleType = ScaleType.Normal;
+	private boolean mScaleTypeChanged;
+	private boolean mBitmapChanged;
 
-	final protected float MAX_ZOOM = 2.0f;
 	final protected int DEFAULT_ANIMATION_DURATION = 200;
 
 	protected RectF mBitmapRect = new RectF();
@@ -75,50 +81,76 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		setImageBitmap( null, true );
 	}
 
-	public void setFitToScreen( boolean value ) {
-		if ( value != mFitToScreen ) {
-			mFitToScreen = value;
-			mFitToScreenChanged = true;
+	public void setScaleType( ScaleType type ) {
+		if ( type != mScaleType ) {
+			mScaleType = type;
+			mScaleTypeChanged = true;
 			requestLayout();
 		}
 	}
 
 	public void setMinZoom( float value ) {
-		Log.d( LOG_TAG, "minZoom: " + value );
+		Log.d( LOG_TAG, "setMinZoom: " + value );
 		mMinZoom = value;
 	}
 	
 	public void setMaxZoom( float value ) {
-		Log.d( LOG_TAG, "maxZoom: " + value );
+		Log.d( LOG_TAG, "setMaxZoom: " + value );
 		mMaxZoom = value;
 	}
 
 	@Override
 	protected void onLayout( boolean changed, int left, int top, int right, int bottom ) {
-		Log.i( LOG_TAG, "onLayout: " + changed );
+		
+		Log.i( LOG_TAG, "onLayout: " + changed + ", bitmapChanged: " + mBitmapChanged + ", scaleChanged: " + mScaleTypeChanged );
 		
 		super.onLayout( changed, left, top, right, bottom );
 		mThisWidth = right - left;
 		mThisHeight = bottom - top;
-		Runnable r = mOnLayoutRunnable;
+		
+		Runnable r = mLayoutRunnable;
+		
 		if ( r != null ) {
-			mOnLayoutRunnable = null;
+			mLayoutRunnable = null;
 			r.run();
 		}
 		
-		if( changed || mFitToScreenChanged || mBitmapChanged ) {
+		if( getDrawable() != null ) {
 			
-			mBitmapChanged = false;
-			mFitToScreenChanged = false;
-		
-			if ( getDrawable() != null ) {
-				if ( mFitToScreen ) {
-					getProperBaseMatrix2( getDrawable(), mBaseMatrix );
-				} else {
-					getProperBaseMatrix( getDrawable(), mBaseMatrix );
+			if( changed || mScaleTypeChanged || mBitmapChanged ) {
+				
+				Log.d( LOG_TAG, "compute matrix..." );
+				
+				getProperBaseMatrix( getDrawable(), mBaseMatrix );
+				
+				float scale = 0;
+				
+				if( mNextMatrix != null ) {
+					mSuppMatrix.set( mNextMatrix );
+					mNextMatrix = null;
+					scale = getScale( mSuppMatrix );
 				}
+				
 				setImageMatrix( getImageViewMatrix() );
-				zoomTo( mFitToScreen ? 1 : getScale( mBaseMatrix ) );
+				
+				
+				if( mScaleType == ScaleType.FitToScreen ) {
+					scale = 1f;
+				} else if( mScaleType == ScaleType.Normal ) {
+					
+					if( scale == 0 ) {
+						scale = 1f / getScale( mBaseMatrix );
+					}
+				}
+				
+				zoomTo( scale );
+				
+				Log.d( LOG_TAG, "scale: " +  getScale( mSuppMatrix ) );
+				Log.d( LOG_TAG, "minZoom: " +  getMinZoom() );
+				Log.d( LOG_TAG, "maxZoom: " +  getMaxZoom() );
+				
+				if( mScaleTypeChanged ) mScaleTypeChanged = false;
+				if( mBitmapChanged ) mBitmapChanged = false;
 			}
 		}
 	}
@@ -144,27 +176,7 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	 * @see #setImageBitmap(Bitmap)
 	 */	
 	public void setImageBitmap( final Bitmap bitmap, final boolean reset ) {
-		setImageBitmap( bitmap, reset, null );
-	}
-
-	/**
-	 * Similar to {@link #setImageBitmap(Bitmap, boolean)} but an optional view {@link Matrix} can be passed to determine the new
-	 * bitmap view matrix.<br />
-	 * This method is useful if you need to restore a Bitmap with the same zoom/pan values from a previous state
-	 * 
-	 * @param bitmap
-	 *           - the {@link Bitmap} to display
-	 * @param reset
-	 * @param matrix
-	 *           - the {@link Matrix} to be used to display the new bitmap
-	 * 
-	 * @see #setImageBitmap(Bitmap, boolean)
-	 * @see #setImageBitmap(Bitmap)
-	 * @see #getImageViewMatrix()
-	 * @see #getDisplayMatrix()
-	 */
-	public void setImageBitmap( final Bitmap bitmap, final boolean reset, Matrix matrix ) {
-		setImageBitmap( bitmap, reset, matrix, -1 );
+		setImageBitmap( bitmap, reset, null, ZOOM_INVALID, ZOOM_INVALID );
 	}
 
 	/**
@@ -177,81 +189,95 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 	 * 
 	 * @see #setImageBitmap(Bitmap, boolean, Matrix)
 	 */
-	public void setImageBitmap( final Bitmap bitmap, final boolean reset, Matrix matrix, float maxZoom ) {
+	public void setImageBitmap( final Bitmap bitmap, final boolean reset, Matrix matrix, float min_zoom, float max_zoom ) {
 
 		if ( bitmap != null )
-			setImageDrawable( new FastBitmapDrawable( bitmap ), reset, matrix, maxZoom );
+			setImageDrawable( new FastBitmapDrawable( bitmap ), reset, matrix, min_zoom, max_zoom );
 		else
-			setImageDrawable( null, reset, matrix, maxZoom );
+			setImageDrawable( null, reset, matrix, min_zoom, max_zoom );
 	}
 
 	@Override
 	public void setImageDrawable( Drawable drawable ) {
-		setImageDrawable( drawable, true, null, -1 );
+		setImageDrawable( drawable, true, null, ZOOM_INVALID, ZOOM_INVALID );
 	}
 
-	public void setImageDrawable( final Drawable drawable, final boolean reset, final Matrix initial_matrix, final float maxZoom ) {
+	public void setImageDrawable( final Drawable drawable, final boolean reset, final Matrix initial_matrix, final float min_zoom, final float max_zoom ) {
 
 		final int viewWidth = getWidth();
 
 		if ( viewWidth <= 0 ) {
-			mOnLayoutRunnable = new Runnable() {
+			mLayoutRunnable = new Runnable() {
 
 				@Override
 				public void run() {
-					setImageDrawable( drawable, reset, initial_matrix, maxZoom );
+					setImageDrawable( drawable, reset, initial_matrix, min_zoom, max_zoom );
 				}
 			};
 			return;
 		}
 
-		_setImageDrawable( drawable, reset, initial_matrix, maxZoom );
+		_setImageDrawable( drawable, reset, initial_matrix, min_zoom, max_zoom );
 	}
 
-	protected void _setImageDrawable( final Drawable drawable, final boolean reset, final Matrix initial_matrix, final float maxZoom ) {
-
+	protected void _setImageDrawable( final Drawable drawable, final boolean reset, final Matrix initial_matrix, float min_zoom, float max_zoom ) {
+		
+		Log.i( LOG_TAG, "_setImageDrawable" );
+		
 		if ( drawable != null ) {
-			if ( mFitToScreen ) {
-				getProperBaseMatrix2( drawable, mBaseMatrix );
-			} else {
-				getProperBaseMatrix( drawable, mBaseMatrix );
-			}
+			Log.d( LOG_TAG, "size: " + drawable.getIntrinsicWidth() + "x" + drawable.getIntrinsicHeight() );
 			super.setImageDrawable( drawable );
 		} else {
 			mBaseMatrix.reset();
 			super.setImageDrawable( null );
 		}
+		
+		
+		if( min_zoom != ZOOM_INVALID && max_zoom != ZOOM_INVALID ) {
+			min_zoom = Math.min( min_zoom, max_zoom );
+			max_zoom = Math.max( min_zoom, max_zoom );
+			
+			mMinZoom = min_zoom;
+			mMaxZoom = max_zoom;
+			
+			if( mScaleType == ScaleType.FitToScreen ) {
+				
+				if( mMinZoom >= 1 ) {
+					mMinZoom = ZOOM_INVALID;
+				}
+				
+				if( mMaxZoom <= 1 ) {
+					mMaxZoom = ZOOM_INVALID;
+				}
+			}
+		} else {
+			mMinZoom = ZOOM_INVALID;
+			mMaxZoom = ZOOM_INVALID;
+		}
+		
 
 		if ( reset ) {
 			mSuppMatrix.reset();
-			if ( initial_matrix != null ) {
-				mSuppMatrix = new Matrix( initial_matrix );
+			
+			if ( initial_matrix != null && mScaleType == ScaleType.Normal ) {
+				mNextMatrix = new Matrix( initial_matrix );
 			}
 		}
 
-		setImageMatrix( getImageViewMatrix() );
-
-		if ( maxZoom < 1 )
-			mMaxZoom = maxZoom();
-		else
-			mMaxZoom = maxZoom;
-
 		onBitmapChanged( drawable );
+		requestLayout();
 	}
 
 	protected void onBitmapChanged( final Drawable bitmap ) {
+		Log.i( LOG_TAG, "onBitmapChanged" );
+		
 		mBitmapChanged = true;
 		if ( mListener != null ) {
 			mListener.onBitmapChanged( bitmap );
 		}
 	}
 
-	/**
-	 * compute the max allowed zoom fator
-	 * 
-	 * @return
-	 */
-	protected float maxZoom() {
+	protected float computeMaxZoom() {
 		final Drawable drawable = getDrawable();
 
 		if ( drawable == null ) {
@@ -260,18 +286,43 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 
 		float fw = (float) drawable.getIntrinsicWidth() / (float) mThisWidth;
 		float fh = (float) drawable.getIntrinsicHeight() / (float) mThisHeight;
-		float max = Math.max( fw, fh ) * 4;
-		return max;
+		float scale = Math.max( fw, fh ) * 8;
+		
+		Log.i( LOG_TAG, "computeMaxZoom: " + scale );
+		return scale;
+	}
+	
+	protected float computeMinZoom() {
+		final Drawable drawable = getDrawable();
+
+		if ( drawable == null ) {
+			return 1F;
+		}
+		
+		float scale;
+		
+		if( mScaleType == ScaleType.Normal ) {
+			scale = Math.min( 1f, 1f / getScale( mBaseMatrix ) );
+		} else {
+			scale = Math.min( 1f, 1f / getScale( mBaseMatrix ) );
+			//scale = 1f;
+		}
+
+		Log.i( LOG_TAG, "computeMinZoom: " + scale );
+		return scale;
 	}
 
 	public float getMaxZoom() {
-		if ( mMaxZoom < 1 ) {
-			mMaxZoom = maxZoom();
+		if ( mMaxZoom == ZOOM_INVALID ) {
+			mMaxZoom = computeMaxZoom();
 		}
 		return mMaxZoom;
 	}
 
 	public float getMinZoom() {
+		if( mMinZoom == ZOOM_INVALID ) {
+			mMinZoom = computeMinZoom();
+		}
 		return mMinZoom;
 	}
 
@@ -328,20 +379,36 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		float viewHeight = getHeight();
 		float w = drawable.getIntrinsicWidth();
 		float h = drawable.getIntrinsicHeight();
+		float widthScale, heightScale;
 		matrix.reset();
 
 		if ( w > viewWidth || h > viewHeight ) {
-			float widthScale = Math.min( viewWidth / w, 2.0f );
-			float heightScale = Math.min( viewHeight / h, 2.0f );
+			widthScale = Math.min( viewWidth / w, 2.0f );
+			heightScale = Math.min( viewHeight / h, 2.0f );
 			float scale = Math.min( widthScale, heightScale );
 			matrix.postScale( scale, scale );
+			
+			Log.d( LOG_TAG, "scale: " + scale );
+			
 			float tw = ( viewWidth - w * scale ) / 2.0f;
 			float th = ( viewHeight - h * scale ) / 2.0f;
 			matrix.postTranslate( tw, th );
+			
 		} else {
-			float tw = ( viewWidth - w ) / 2.0f;
-			float th = ( viewHeight - h ) / 2.0f;
-			matrix.postTranslate( tw, th );
+			//float tw = ( viewWidth - w ) / 2.0f;
+			//float th = ( viewHeight - h ) / 2.0f;
+			//matrix.postTranslate( tw, th );
+			
+			widthScale = viewWidth / w;
+			heightScale = viewHeight / h;
+			float scale = Math.min( widthScale, heightScale );
+			matrix.postScale( scale, scale );
+			
+			Log.d( LOG_TAG, "scale: " + scale + ", widthScale: " + widthScale + ", heightScale: " + heightScale );
+			
+			float tw = ( viewWidth - w * scale ) / 2.0f;
+			float th = ( viewHeight - h * scale ) / 2.0f;
+			matrix.postTranslate( tw, th );		
 		}
 	}
 
@@ -408,7 +475,6 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 		if ( drawable == null ) return;
 		RectF rect = getCenter( mSuppMatrix, horizontal, vertical );
 		if ( rect.left != 0 || rect.top != 0 ) {
-			Log.d( LOG_TAG, "center.rect: " + rect.left + "x" + rect.top );
 			postTranslate( rect.left, rect.top );
 		}
 	}

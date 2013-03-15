@@ -3,11 +3,15 @@ package it.sephiroth.android.library.imagezoom.test;
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 import it.sephiroth.android.library.imagezoom.ImageViewTouch.OnImageViewTouchDoubleTapListener;
 import it.sephiroth.android.library.imagezoom.ImageViewTouch.OnImageViewTouchSingleTapListener;
+import it.sephiroth.android.library.imagezoom.ImageViewTouchBase.OnBitmapChangedListener;
+import it.sephiroth.android.library.imagezoom.ImageViewTouchBase.ScaleType;
 import it.sephiroth.android.library.imagezoom.test.utils.DecodeUtils;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore.Images;
@@ -19,14 +23,14 @@ import android.widget.Button;
 import android.widget.Toast;
 
 public class ImageViewTestActivity extends Activity {
+	
+	private static final String LOG_TAG = "image-test";
 
 	ImageViewTouch mImage;
 	Button mButton;
 
 	@Override
 	protected void onCreate( Bundle savedInstanceState ) {
-		Log.i( "image", "onCreate" );
-		
 		super.onCreate( savedInstanceState );
 		requestWindowFeature( Window.FEATURE_NO_TITLE );
 		setContentView( R.layout.main );
@@ -50,7 +54,7 @@ public class ImageViewTestActivity extends Activity {
 			
 			@Override
 			public void onSingleTapConfirmed() {
-				Log.d( "image", "onSingleTapConfirmed" );
+				Log.d( LOG_TAG, "onSingleTapConfirmed" );
 			}
 		} );
 		
@@ -58,7 +62,15 @@ public class ImageViewTestActivity extends Activity {
 			
 			@Override
 			public void onDoubleTap() {
-				Log.d( "image", "onDoubleTap" );
+				Log.d( LOG_TAG, "onDoubleTap" );
+			}
+		} );
+		
+		mImage.setOnBitmapChangedListener( new OnBitmapChangedListener() {
+			
+			@Override
+			public void onBitmapChanged( Drawable drawable ) {
+				Log.i( LOG_TAG, "onBitmapChanged: " + drawable );
 			}
 		} );
 	}
@@ -67,6 +79,8 @@ public class ImageViewTestActivity extends Activity {
 	public void onConfigurationChanged( Configuration newConfig ) {
 		super.onConfigurationChanged( newConfig );
 	}
+	
+	Matrix imageMatrix;
 
 	public void selectRandomImage() {
 		Cursor c = getContentResolver().query( Images.Media.EXTERNAL_CONTENT_URI, null, null, null, null );
@@ -77,18 +91,33 @@ public class ImageViewTestActivity extends Activity {
 				long id = c.getLong( c.getColumnIndex( Images.Media._ID ) );
 
 				Uri imageUri = Uri.parse( Images.Media.EXTERNAL_CONTENT_URI + "/" + id );
+				
+				// imageUri = Uri.parse( "content://media/external/images/media/14138" );
+
+				
 				Log.d( "image", imageUri.toString() );
 				
-				Bitmap bitmap = DecodeUtils.decode( this, imageUri, 800, 600 );
+				final int size = 400;
+				Bitmap bitmap = DecodeUtils.decode( this, imageUri, size, size );
 				if( null != bitmap )
 				{
 					// you can set the minimum zoom of the image ( must be called before anything else )
 					// mImage.setMinZoom( 1.9f );
 					
 					// calling this will force the image to fit the ImageView container width/height
-					mImage.setFitToScreen( true );
+					mImage.setScaleType( ScaleType.FitToScreen );
 					
-					mImage.setImageBitmap( bitmap, true, null, 5.0f );
+					if( null == imageMatrix ) {
+						imageMatrix = new Matrix();
+					} else {
+						// imageMatrix = new Matrix( mImage.getDisplayMatrix() );
+					}
+					
+					// if the scaleType is set to ScaleType.FitToScreen, then the 
+					// initial matrix is ignored
+					mImage.setImageBitmap( bitmap, true, imageMatrix.isIdentity() ? null : imageMatrix, -1, -1 );
+					
+					
 				} else {
 					Toast.makeText( this, "Failed to load the image", Toast.LENGTH_LONG ).show();
 				}
