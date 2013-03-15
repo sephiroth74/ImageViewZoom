@@ -1,13 +1,17 @@
 package it.sephiroth.android.library.imagezoom.test;
 
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
+import it.sephiroth.android.library.imagezoom.ImageViewTouch.OnImageViewTouchDoubleTapListener;
+import it.sephiroth.android.library.imagezoom.ImageViewTouch.OnImageViewTouchSingleTapListener;
 import it.sephiroth.android.library.imagezoom.test.utils.DecodeUtils;
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore.Images;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
@@ -21,6 +25,8 @@ public class ImageViewTestActivity extends Activity {
 
 	@Override
 	protected void onCreate( Bundle savedInstanceState ) {
+		Log.i( "image", "onCreate" );
+		
 		super.onCreate( savedInstanceState );
 		requestWindowFeature( Window.FEATURE_NO_TITLE );
 		setContentView( R.layout.main );
@@ -39,6 +45,27 @@ public class ImageViewTestActivity extends Activity {
 				selectRandomImage();
 			}
 		} );
+		
+		mImage.setSingleTapListener( new OnImageViewTouchSingleTapListener() {
+			
+			@Override
+			public void onSingleTapConfirmed() {
+				Log.d( "image", "onSingleTapConfirmed" );
+			}
+		} );
+		
+		mImage.setDoubleTapListener( new OnImageViewTouchDoubleTapListener() {
+			
+			@Override
+			public void onDoubleTap() {
+				Log.d( "image", "onDoubleTap" );
+			}
+		} );
+	}
+	
+	@Override
+	public void onConfigurationChanged( Configuration newConfig ) {
+		super.onConfigurationChanged( newConfig );
 	}
 
 	public void selectRandomImage() {
@@ -50,11 +77,17 @@ public class ImageViewTestActivity extends Activity {
 				long id = c.getLong( c.getColumnIndex( Images.Media._ID ) );
 
 				Uri imageUri = Uri.parse( Images.Media.EXTERNAL_CONTENT_URI + "/" + id );
-				Bitmap bitmap = DecodeUtils.decode( this, imageUri, 1280, 1280 );
+				Log.d( "image", imageUri.toString() );
+				
+				Bitmap bitmap = DecodeUtils.decode( this, imageUri, 800, 600 );
 				if( null != bitmap )
 				{
-					//mImage.setMinZoom( 1.5f ); // you can set the minimum zoom of the image ( must be called before anything else )
-					//mImage.setFitToScreen( true ); // calling this will force the image to fit the ImageView container width/height
+					// you can set the minimum zoom of the image ( must be called before anything else )
+					// mImage.setMinZoom( 1.9f );
+					
+					// calling this will force the image to fit the ImageView container width/height
+					mImage.setFitToScreen( true );
+					
 					mImage.setImageBitmap( bitmap, true, null, 5.0f );
 				} else {
 					Toast.makeText( this, "Failed to load the image", Toast.LENGTH_LONG ).show();
