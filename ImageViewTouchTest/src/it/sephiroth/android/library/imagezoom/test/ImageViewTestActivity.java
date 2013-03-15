@@ -97,13 +97,10 @@ public class ImageViewTestActivity extends Activity {
 				
 				Log.d( "image", imageUri.toString() );
 				
-				final int size = 400;
+				final int size = 1000;
 				Bitmap bitmap = DecodeUtils.decode( this, imageUri, size, size );
 				if( null != bitmap )
 				{
-					// you can set the minimum zoom of the image ( must be called before anything else )
-					// mImage.setMinZoom( 1.9f );
-					
 					// calling this will force the image to fit the ImageView container width/height
 					mImage.setScaleType( ScaleType.FitToScreen );
 					
@@ -113,8 +110,7 @@ public class ImageViewTestActivity extends Activity {
 						// imageMatrix = new Matrix( mImage.getDisplayMatrix() );
 					}
 					
-					// if the scaleType is set to ScaleType.FitToScreen, then the 
-					// initial matrix is ignored
+					// if the scaleType is set to ScaleType.FitToScreen, then the  initial matrix is ignored
 					mImage.setImageBitmap( bitmap, true, imageMatrix.isIdentity() ? null : imageMatrix, -1, -1 );
 					
 					

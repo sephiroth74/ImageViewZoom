@@ -143,6 +143,13 @@ public class ImageViewTouchBase extends ImageView implements IDisposable {
 					}
 				}
 				
+				// ============================================
+				// TODO: 
+				//		need to find a nice way to restore the old
+				// 	image position/scale if we just receive a change in
+				//		the layout ( ie. screen orientation change )
+				// ============================================
+				
 				zoomTo( scale );
 				
 				Log.d( LOG_TAG, "scale: " +  getScale( mSuppMatrix ) );
