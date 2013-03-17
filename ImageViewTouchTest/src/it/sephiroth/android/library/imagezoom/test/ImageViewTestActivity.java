@@ -3,8 +3,9 @@ package it.sephiroth.android.library.imagezoom.test;
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 import it.sephiroth.android.library.imagezoom.ImageViewTouch.OnImageViewTouchDoubleTapListener;
 import it.sephiroth.android.library.imagezoom.ImageViewTouch.OnImageViewTouchSingleTapListener;
+import it.sephiroth.android.library.imagezoom.ImageViewTouchBase;
+import it.sephiroth.android.library.imagezoom.ImageViewTouchBase.DisplayType;
 import it.sephiroth.android.library.imagezoom.ImageViewTouchBase.OnBitmapChangedListener;
-import it.sephiroth.android.library.imagezoom.ImageViewTouchBase.ScaleType;
 import it.sephiroth.android.library.imagezoom.test.utils.DecodeUtils;
 import android.app.Activity;
 import android.content.res.Configuration;
@@ -27,7 +28,8 @@ public class ImageViewTestActivity extends Activity {
 	private static final String LOG_TAG = "image-test";
 
 	ImageViewTouch mImage;
-	Button mButton;
+	Button mButton1;
+	Button mButton2;
 
 	@Override
 	protected void onCreate( Bundle savedInstanceState ) {
@@ -40,13 +42,25 @@ public class ImageViewTestActivity extends Activity {
 	public void onContentChanged() {
 		super.onContentChanged();
 		mImage = (ImageViewTouch) findViewById( R.id.image );
-		mButton = (Button) findViewById( R.id.button );
+		mImage.setDisplayType( DisplayType.FIT_TO_SCREEN );
 		
-		mButton.setOnClickListener( new OnClickListener() {
+		mButton1 = (Button) findViewById( R.id.button );
+		mButton2 = (Button) findViewById( R.id.button2 );
+		
+		mButton1.setOnClickListener( new OnClickListener() {
 			
 			@Override
 			public void onClick( View v ) {
 				selectRandomImage();
+			}
+		} );
+		
+		mButton2.setOnClickListener( new OnClickListener() {
+			
+			@Override
+			public void onClick( View v ) {
+				DisplayType current = mImage.getDisplayType();
+				mImage.setDisplayType( current == DisplayType.NONE ? DisplayType.FIT_TO_SCREEN : DisplayType.NONE );
 			}
 		} );
 		
@@ -91,28 +105,24 @@ public class ImageViewTestActivity extends Activity {
 				long id = c.getLong( c.getColumnIndex( Images.Media._ID ) );
 
 				Uri imageUri = Uri.parse( Images.Media.EXTERNAL_CONTENT_URI + "/" + id );
-				
-				// imageUri = Uri.parse( "content://media/external/images/media/14138" );
 
-				
 				Log.d( "image", imageUri.toString() );
 				
-				final int size = 1000;
+				final int size = 1200;
 				Bitmap bitmap = DecodeUtils.decode( this, imageUri, size, size );
 				if( null != bitmap )
 				{
 					// calling this will force the image to fit the ImageView container width/height
-					mImage.setScaleType( ScaleType.FitToScreen );
 					
 					if( null == imageMatrix ) {
 						imageMatrix = new Matrix();
 					} else {
-						// imageMatrix = new Matrix( mImage.getDisplayMatrix() );
+						// get the current image matrix, if we want restore the 
+						// previous matrix once the bitmap is changed
+						// imageMatrix = mImage.getDisplayMatrix();
 					}
 					
-					// if the scaleType is set to ScaleType.FitToScreen, then the  initial matrix is ignored
-					mImage.setImageBitmap( bitmap, true, imageMatrix.isIdentity() ? null : imageMatrix, -1, -1 );
-					
+					mImage.setImageBitmap( bitmap, imageMatrix.isIdentity() ? null : imageMatrix, ImageViewTouchBase.ZOOM_INVALID, ImageViewTouchBase.ZOOM_INVALID );
 					
 				} else {
 					Toast.makeText( this, "Failed to load the image", Toast.LENGTH_LONG ).show();

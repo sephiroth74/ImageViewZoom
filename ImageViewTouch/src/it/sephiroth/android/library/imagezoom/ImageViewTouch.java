@@ -17,7 +17,6 @@ import android.view.ViewConfiguration;
 public class ImageViewTouch extends ImageViewTouchBase {
 
 	static final float SCROLL_DELTA_THRESHOLD = 1.0f;
-	static final float MIN_ZOOM = 0.9f;
 	protected ScaleGestureDetector mScaleDetector;
 	protected GestureDetector mGestureDetector;
 	protected int mTouchSlop;
@@ -83,8 +82,8 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	}
 
 	@Override
-	protected void onBitmapChanged( Drawable drawable ) {
-		super.onBitmapChanged( drawable );
+	protected void onPostLayoutChanged() {
+		super.onPostLayoutChanged();
 
 		float v[] = new float[9];
 		mSuppMatrix.getValues( v );
@@ -92,10 +91,9 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	}
 
 	@Override
-	protected void _setImageDrawable( final Drawable drawable, final boolean reset, final Matrix initial_matrix, float min_zoom,
-			float max_zoom ) {
-		super._setImageDrawable( drawable, reset, initial_matrix, min_zoom, max_zoom );
-		mScaleFactor = getMaxZoom() / 3;
+	protected void _setImageDrawable( final Drawable drawable, final Matrix initial_matrix, float min_zoom, float max_zoom ) {
+		super._setImageDrawable( drawable, initial_matrix, min_zoom, max_zoom );
+		mScaleFactor = getMaxScale() / 3;
 	}
 
 	@Override
@@ -109,8 +107,8 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		int action = event.getAction();
 		switch ( action & MotionEvent.ACTION_MASK ) {
 			case MotionEvent.ACTION_UP:
-				if ( getScale() < getMinZoom() ) {
-					zoomTo( getMinZoom(), 50 );
+				if ( getScale() < getMinScale() ) {
+					zoomTo( getMinScale(), 50 );
 				}
 				break;
 		}
@@ -119,19 +117,17 @@ public class ImageViewTouch extends ImageViewTouchBase {
 
 	@Override
 	protected void onZoom( float scale ) {
-		super.onZoom( scale );
 		if ( !mScaleDetector.isInProgress() ) mCurrentScaleFactor = scale;
 	}
 
 	@Override
 	protected void onZoomAnimationCompleted( float scale ) {
-		super.onZoomAnimationCompleted( scale );
 		if ( !mScaleDetector.isInProgress() ) mCurrentScaleFactor = scale;
 
-		Log.d( LOG_TAG, "onZoomAnimationCompleted. scale: " + scale + ", minZoom: " + getMinZoom() );
+		Log.d( LOG_TAG, "onZoomAnimationCompleted. scale: " + scale + ", minZoom: " + getMinScale() );
 
-		if ( scale < getMinZoom() ) {
-			zoomTo( getMinZoom(), 50 );
+		if ( scale < getMinScale() ) {
+			zoomTo( getMinScale(), 50 );
 		}
 	}
 
@@ -157,7 +153,6 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		if ( mScaleDetector.isInProgress() ) return false;
 		if ( getScale() == 1f ) return false;
 
-		Log.d( LOG_TAG, "onScroll: " + distanceX + ", " + distanceY );
 		scrollBy( -distanceX, -distanceY );
 		invalidate();
 		return true;
@@ -222,8 +217,8 @@ public class ImageViewTouch extends ImageViewTouchBase {
 			if ( mDoubleTapEnabled ) {
 				float scale = getScale();
 				float targetScale = scale;
-				targetScale = onDoubleTapPost( scale, getMaxZoom() );
-				targetScale = Math.min( getMaxZoom(), Math.max( targetScale, getMinZoom() ) );
+				targetScale = onDoubleTapPost( scale, getMaxScale() );
+				targetScale = Math.min( getMaxScale(), Math.max( targetScale, getMinScale() ) );
 				mCurrentScaleFactor = targetScale;
 				zoomTo( targetScale, e.getX(), e.getY(), DEFAULT_ANIMATION_DURATION );
 				invalidate();
@@ -259,20 +254,16 @@ public class ImageViewTouch extends ImageViewTouchBase {
 
 	public class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
 
-		@SuppressWarnings("unused")
 		@Override
 		public boolean onScale( ScaleGestureDetector detector ) {
 			float span = detector.getCurrentSpan() - detector.getPreviousSpan();
 			float targetScale = mCurrentScaleFactor * detector.getScaleFactor();
 
-			Log.d( LOG_TAG, "span: " + span + ", scale: " + targetScale + ", in progress: " + detector.isInProgress() + ", time: "
-					+ detector.getTimeDelta() );
-
 			if ( mScaleEnabled ) {
 				if ( span != 0 ) {
-					targetScale = Math.min( getMaxZoom(), Math.max( targetScale, getMinZoom() - 0.1f ) );
+					targetScale = Math.min( getMaxScale(), Math.max( targetScale, getMinScale() - 0.1f ) );
 					zoomTo( targetScale, detector.getFocusX(), detector.getFocusY() );
-					mCurrentScaleFactor = Math.min( getMaxZoom(), Math.max( targetScale, getMinZoom() - 1.0f ) );
+					mCurrentScaleFactor = Math.min( getMaxScale(), Math.max( targetScale, getMinScale() - 1.0f ) );
 					mDoubleTapDirection = 1;
 					invalidate();
 					return true;

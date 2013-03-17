@@ -5,16 +5,34 @@
     android:orientation="vertical" >
 
     <it.sephiroth.android.library.imagezoom.ImageViewTouch
-        android:layout_weight="1"
         android:id="@+id/image"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_weight="1"
         android:scaleType="fitCenter" />
 
-    <Button
-        android:id="@+id/button"
+    <LinearLayout
+        android:layout_weight="0"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Load Image" />
+        android:orientation="horizontal"
+        android:padding="5dp"
+        android:gravity="center"
+        android:weightSum="2" >
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Load Image" />
+
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Change Display" />
+    </LinearLayout>
 
 </LinearLayout>
