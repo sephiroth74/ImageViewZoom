@@ -5,7 +5,7 @@ import it.sephiroth.android.library.imagezoom.ImageViewTouch.OnImageViewTouchDou
 import it.sephiroth.android.library.imagezoom.ImageViewTouch.OnImageViewTouchSingleTapListener;
 import it.sephiroth.android.library.imagezoom.ImageViewTouchBase;
 import it.sephiroth.android.library.imagezoom.ImageViewTouchBase.DisplayType;
-import it.sephiroth.android.library.imagezoom.ImageViewTouchBase.OnDrawableChangedListener;
+import it.sephiroth.android.library.imagezoom.ImageViewTouchBase.OnDrawableChangeListener;
 import it.sephiroth.android.library.imagezoom.test.utils.DecodeUtils;
 import android.app.Activity;
 import android.content.res.Configuration;
@@ -80,7 +80,7 @@ public class ImageViewTestActivity extends Activity {
 			}
 		} );
 		
-		mImage.setOnDrawableChangedListener( new OnDrawableChangedListener() {
+		mImage.setOnDrawableChangedListener( new OnDrawableChangeListener() {
 			
 			@Override
 			public void onDrawableChanged( Drawable drawable ) {
@@ -108,7 +108,7 @@ public class ImageViewTestActivity extends Activity {
 
 				Log.d( "image", imageUri.toString() );
 				
-				final int size = 1200;
+				final int size = 1400;
 				Bitmap bitmap = DecodeUtils.decode( this, imageUri, size, size );
 				if( null != bitmap )
 				{

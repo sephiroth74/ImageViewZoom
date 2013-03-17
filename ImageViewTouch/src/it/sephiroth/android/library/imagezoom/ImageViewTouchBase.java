@@ -216,7 +216,8 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 						if ( mScaleType == DisplayType.FIT_TO_SCREEN ) {
 							scale = 1f;
 						} else {
-							scale = 1f / getScale( mBaseMatrix );
+							// normal scale if smaller, fit to screen otherwise
+							scale = Math.min( 1f, 1f / getScale( mBaseMatrix ) );
 						}
 					}
 
