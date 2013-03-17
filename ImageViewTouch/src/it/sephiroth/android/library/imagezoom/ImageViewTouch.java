@@ -82,8 +82,8 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	}
 
 	@Override
-	protected void onPostLayoutChanged() {
-		super.onPostLayoutChanged();
+	protected void onLayoutChanged() {
+		super.onLayoutChanged();
 
 		float v[] = new float[9];
 		mSuppMatrix.getValues( v );
