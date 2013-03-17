@@ -169,20 +169,24 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		}
 
 		super.onLayout( changed, left, top, right, bottom );
+		
+		int deltaX = 0;
+		int deltaY = 0;
+		
+		if( changed ) {
+			int oldw = mThisWidth;
+			int oldh = mThisHeight;
 
-		// update bounds
-		int oldw = mThisWidth;
-		int oldh = mThisHeight;
+			mThisWidth = right - left;
+			mThisHeight = bottom - top;
 
-		mThisWidth = right - left;
-		mThisHeight = bottom - top;
+			deltaX = mThisWidth - oldw;
+			deltaY = mThisHeight - oldh;
 
-		int deltaX = mThisWidth - oldw;
-		int deltaY = mThisHeight - oldh;
-
-		// update center point
-		mCenter.x = mThisWidth / 2f;
-		mCenter.y = mThisHeight / 2f;
+			// update center point
+			mCenter.x = mThisWidth / 2f;
+			mCenter.y = mThisHeight / 2f;
+		}
 
 		Runnable r = mLayoutRunnable;
 
@@ -251,21 +255,19 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 				center( true, true );
 
 				if( mBitmapChanged ) onDrawableChanged( drawable );
-				onLayoutChanged( changed || mBitmapChanged || mScaleTypeChanged, left, top, right, bottom );
+				if( changed || mBitmapChanged || mScaleTypeChanged ) onLayoutChanged( left, top, right, bottom );
 				
 				if ( mScaleTypeChanged ) mScaleTypeChanged = false;
 				if ( mBitmapChanged ) mBitmapChanged = false;
 			}
 		} else {
 			// drawable is null
-			if( mBitmapChanged ) {
-				onDrawableChanged( drawable );
-			}
+			if( mBitmapChanged ) onDrawableChanged( drawable );
+			if( changed || mBitmapChanged || mScaleTypeChanged ) onLayoutChanged( left, top, right, bottom );
 			
-			mBitmapChanged = false;
-			mScaleTypeChanged = false;
+			if ( mBitmapChanged ) mBitmapChanged = false;
+			if ( mScaleTypeChanged ) mScaleTypeChanged = false;
 			
-			onLayoutChanged( changed || mBitmapChanged || mScaleTypeChanged, left, top, right, bottom );
 		}
 	}
 
@@ -403,9 +405,9 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		fireOnDrawableChangeListener( drawable );
 	}
 	
-	protected void fireOnLayoutChangeListener( boolean changed, int left, int top, int right, int bottom ) {
+	protected void fireOnLayoutChangeListener( int left, int top, int right, int bottom ) {
 		if( null != mOnLayoutChangeListener ) {
-			mOnLayoutChangeListener.onLayoutChanged( changed, left, top, right, bottom );
+			mOnLayoutChangeListener.onLayoutChanged( true, left, top, right, bottom );
 		}
 	}
 	
@@ -426,11 +428,11 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	 * @param right
 	 * @param bottom
 	 */
-	protected void onLayoutChanged( boolean changed, int left, int top, int right, int bottom ) {
+	protected void onLayoutChanged( int left, int top, int right, int bottom ) {
 		if( LOG_ENABLED ) {
 			Log.i( LOG_TAG, "onLayoutChanged" );
 		}
-		fireOnLayoutChangeListener( changed, left, top, right, bottom );
+		fireOnLayoutChangeListener( left, top, right, bottom );
 	}
 
 	protected float computeMaxZoom() {
