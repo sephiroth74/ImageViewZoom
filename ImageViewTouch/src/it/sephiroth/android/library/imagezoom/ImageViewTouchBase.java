@@ -396,7 +396,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	/**
 	 * Fired as soon as a new Bitmap has been set
 	 * 
-	 * @param bitmap
+	 * @param drawable
 	 */
 	protected void onDrawableChanged( final Drawable drawable ) {
 		if( LOG_ENABLED ) {
@@ -422,7 +422,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	 * if the view's bounds has changed or a new Drawable has been set
 	 * or the {@link DisplayType} has been modified 
 	 * 
-	 * @param bounds/bitmap changed 
 	 * @param left
 	 * @param top
 	 * @param right
@@ -555,7 +554,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	/**
 	 * Setup the base matrix so that the image is centered and scaled properly.
 	 * 
-	 * @param bitmap
+	 * @param drawable
 	 * @param matrix
 	 */
 	protected void getProperBaseMatrix( Drawable drawable, Matrix matrix ) {
