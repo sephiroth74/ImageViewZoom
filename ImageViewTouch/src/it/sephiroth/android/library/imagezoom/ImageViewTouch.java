@@ -253,7 +253,11 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		}
 	}
 
+	
+	
 	public class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+		
+		protected boolean mScaled;
 
 		@Override
 		public boolean onScale( ScaleGestureDetector detector ) {
@@ -261,7 +265,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 			float targetScale = mCurrentScaleFactor * detector.getScaleFactor();
 
 			if ( mScaleEnabled ) {
-				if ( span != 0 ) {
+				if( mScaled && span != 0 ) {
 					targetScale = Math.min( getMaxScale(), Math.max( targetScale, getMinScale() - 0.1f ) );
 					zoomTo( targetScale, detector.getFocusX(), detector.getFocusY() );
 					mCurrentScaleFactor = Math.min( getMaxScale(), Math.max( targetScale, getMinScale() - 1.0f ) );
@@ -269,6 +273,10 @@ public class ImageViewTouch extends ImageViewTouchBase {
 					invalidate();
 					return true;
 				}
+				
+				// This is to prevent a glitch the first time 
+				// image is scaled.
+				if( !mScaled ) mScaled = true;
 			}
 			return false;
 		}
