@@ -51,8 +51,8 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	};
 
 	
-	public static final String LOG_TAG = "image";
-	protected static final boolean LOG_ENABLED = true;
+	public static final String LOG_TAG = "ImageViewTouchBase";
+	protected static final boolean LOG_ENABLED = false;
 
 	public static final float ZOOM_INVALID = -1f;
 
@@ -761,9 +761,9 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		center( true, true );
 	}
 
-	protected abstract void onZoom( float scale );
+	protected void onZoom( float scale ){}
 
-	protected abstract void onZoomAnimationCompleted( float scale );
+	protected void onZoomAnimationCompleted( float scale ){}
 
 	/**
 	 * Scrolls the view by the x and y amount

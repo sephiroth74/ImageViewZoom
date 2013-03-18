@@ -20,7 +20,6 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	protected ScaleGestureDetector mScaleDetector;
 	protected GestureDetector mGestureDetector;
 	protected int mTouchSlop;
-	protected float mCurrentScaleFactor;
 	protected float mScaleFactor;
 	protected int mDoubleTapDirection;
 	protected OnGestureListener mGestureListener;
@@ -45,7 +44,6 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		mScaleDetector = new ScaleGestureDetector( getContext(), mScaleListener );
 		mGestureDetector = new GestureDetector( getContext(), mGestureListener, null, true );
 
-		mCurrentScaleFactor = 1f;
 		mDoubleTapDirection = 1;
 	}
 
@@ -82,15 +80,6 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	}
 
 	@Override
-	protected void onLayoutChanged( int left, int top, int right, int bottom ) {
-		super.onLayoutChanged( left, top, right, bottom );
-
-		float v[] = new float[9];
-		mSuppMatrix.getValues( v );
-		mCurrentScaleFactor = v[Matrix.MSCALE_X];
-	}
-
-	@Override
 	protected void _setImageDrawable( final Drawable drawable, final Matrix initial_matrix, float min_zoom, float max_zoom ) {
 		super._setImageDrawable( drawable, initial_matrix, min_zoom, max_zoom );
 		mScaleFactor = getMaxScale() / 3;
@@ -115,16 +104,13 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		return true;
 	}
 
-	@Override
-	protected void onZoom( float scale ) {
-		if ( !mScaleDetector.isInProgress() ) mCurrentScaleFactor = scale;
-	}
 
 	@Override
 	protected void onZoomAnimationCompleted( float scale ) {
-		if ( !mScaleDetector.isInProgress() ) mCurrentScaleFactor = scale;
 
-		Log.d( LOG_TAG, "onZoomAnimationCompleted. scale: " + scale + ", minZoom: " + getMinScale() );
+		if( LOG_ENABLED ) {
+			Log.d( LOG_TAG, "onZoomAnimationCompleted. scale: " + scale + ", minZoom: " + getMinScale() );
+		}
 
 		if ( scale < getMinScale() ) {
 			zoomTo( getMinScale(), 50 );
@@ -220,7 +206,6 @@ public class ImageViewTouch extends ImageViewTouchBase {
 				float targetScale = scale;
 				targetScale = onDoubleTapPost( scale, getMaxScale() );
 				targetScale = Math.min( getMaxScale(), Math.max( targetScale, getMinScale() ) );
-				mCurrentScaleFactor = targetScale;
 				zoomTo( targetScale, e.getX(), e.getY(), DEFAULT_ANIMATION_DURATION );
 				invalidate();
 			}
@@ -257,18 +242,17 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	
 	public class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
 		
-		protected boolean mScaled;
+		protected boolean mScaled = false;
 
 		@Override
 		public boolean onScale( ScaleGestureDetector detector ) {
 			float span = detector.getCurrentSpan() - detector.getPreviousSpan();
-			float targetScale = mCurrentScaleFactor * detector.getScaleFactor();
-
+			float targetScale = getScale() * detector.getScaleFactor();
+			
 			if ( mScaleEnabled ) {
 				if( mScaled && span != 0 ) {
 					targetScale = Math.min( getMaxScale(), Math.max( targetScale, getMinScale() - 0.1f ) );
 					zoomTo( targetScale, detector.getFocusX(), detector.getFocusY() );
-					mCurrentScaleFactor = Math.min( getMaxScale(), Math.max( targetScale, getMinScale() - 1.0f ) );
 					mDoubleTapDirection = 1;
 					invalidate();
 					return true;
@@ -278,7 +262,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 				// image is scaled.
 				if( !mScaled ) mScaled = true;
 			}
-			return false;
+			return true;
 		}
 	}
 
