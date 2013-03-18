@@ -37,8 +37,9 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <java.version>1.6</java.version>
-        <android.version>2.2.1</android.version>
-        <android.platform>8</android.platform>
+        <android.version>4.1.1.4</android.version>
+        <android.platform>16</android.platform>
+        <android.annotations>4.1.1.4</android.annotations>
 
         <android-maven.version>3.3.2</android-maven.version>
     </properties>
@@ -51,6 +52,13 @@
                 <version>${android.version}</version>
                 <scope>provided</scope>
             </dependency>
+
+            <dependency>
+                <groupId>com.google.android</groupId>
+                <artifactId>annotations</artifactId>
+                <version>${android.annotations}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 
