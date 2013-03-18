@@ -175,6 +175,10 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		updateRect( bitmapRect, mScrollRect );
 		Rect imageViewRect = new Rect();
 		getGlobalVisibleRect( imageViewRect );
+		
+		if( null == bitmapRect ) {
+			return false;
+		}
 
 		if ( bitmapRect.right >= imageViewRect.right ) {
 			if ( direction < 0 ) {

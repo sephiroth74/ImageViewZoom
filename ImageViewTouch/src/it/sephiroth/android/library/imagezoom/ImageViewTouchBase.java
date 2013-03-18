@@ -786,16 +786,13 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	protected void updateRect( RectF bitmapRect, RectF scrollRect ) {
 		if ( bitmapRect == null ) return;
 
-		float width = mThisWidth;
-		float height = mThisHeight;
-
-		if ( bitmapRect.top >= 0 && bitmapRect.bottom <= height ) scrollRect.top = 0;
-		if ( bitmapRect.left >= 0 && bitmapRect.right <= width ) scrollRect.left = 0;
-		if ( bitmapRect.top + scrollRect.top >= 0 && bitmapRect.bottom > height ) scrollRect.top = (int) ( 0 - bitmapRect.top );
-		if ( bitmapRect.bottom + scrollRect.top <= ( height - 0 ) && bitmapRect.top < 0 )
-			scrollRect.top = (int) ( ( height - 0 ) - bitmapRect.bottom );
+		if ( bitmapRect.top >= 0 && bitmapRect.bottom <= mThisHeight ) scrollRect.top = 0;
+		if ( bitmapRect.left >= 0 && bitmapRect.right <= mThisWidth ) scrollRect.left = 0;
+		if ( bitmapRect.top + scrollRect.top >= 0 && bitmapRect.bottom > mThisHeight ) scrollRect.top = (int) ( 0 - bitmapRect.top );
+		if ( bitmapRect.bottom + scrollRect.top <= ( mThisHeight - 0 ) && bitmapRect.top < 0 )
+			scrollRect.top = (int) ( ( mThisHeight - 0 ) - bitmapRect.bottom );
 		if ( bitmapRect.left + scrollRect.left >= 0 ) scrollRect.left = (int) ( 0 - bitmapRect.left );
-		if ( bitmapRect.right + scrollRect.left <= ( width - 0 ) ) scrollRect.left = (int) ( ( width - 0 ) - bitmapRect.right );
+		if ( bitmapRect.right + scrollRect.left <= ( mThisWidth - 0 ) ) scrollRect.left = (int) ( ( mThisWidth - 0 ) - bitmapRect.right );
 	}
 
 	protected void scrollBy( float distanceX, float distanceY, final double durationMs ) {
