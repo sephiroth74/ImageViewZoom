@@ -42,6 +42,8 @@ public class ImageViewTestActivity extends Activity {
 	public void onContentChanged() {
 		super.onContentChanged();
 		mImage = (ImageViewTouch) findViewById( R.id.image );
+		
+		// set the default image display type
 		mImage.setDisplayType( DisplayType.FIT_TO_SCREEN );
 		
 		mButton1 = (Button) findViewById( R.id.button );
@@ -105,6 +107,8 @@ public class ImageViewTestActivity extends Activity {
 				long id = c.getLong( c.getColumnIndex( Images.Media._ID ) );
 
 				Uri imageUri = Uri.parse( Images.Media.EXTERNAL_CONTENT_URI + "/" + id );
+				
+				// imageUri = Uri.parse( "content://media/external/images/media/7993" ); // test
 
 				Log.d( "image", imageUri.toString() );
 				

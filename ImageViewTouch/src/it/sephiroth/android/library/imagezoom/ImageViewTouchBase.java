@@ -202,9 +202,21 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 			if ( changed || mScaleTypeChanged || mBitmapChanged ) {
 
 				float scale = 1;
+				
+				// retrieve the old values
 				float old_default_scale = getDefaultScale( mScaleType );
+				float old_matrix_scale = getScale( mBaseMatrix );
+				float old_scale = getScale();
 
 				getProperBaseMatrix( drawable, mBaseMatrix );
+				
+				float new_matrix_scale = getScale( mBaseMatrix );
+				
+				if( LOG_ENABLED ) {
+					Log.d( LOG_TAG, "old matrix scale: " + old_matrix_scale );
+					Log.d( LOG_TAG, "new matrix scale: " + new_matrix_scale );
+					Log.d( LOG_TAG, "old scale: " + old_scale );
+				}
 
 				// 1. bitmap changed or scaletype changed
 				if ( mBitmapChanged || mScaleTypeChanged ) {
@@ -237,18 +249,19 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
 					setImageMatrix( getImageViewMatrix() );
 					postTranslate( -deltaX, -deltaY );
-					scale = getScale();
+					
+					//scale = getScale();
+					if( old_scale != 1.0f ) {
+						scale = ( old_matrix_scale / new_matrix_scale ) * old_scale;
+					}
 					
 					if ( LOG_ENABLED ) {
 						Log.d( LOG_TAG, "old min scale: " + old_default_scale );
-						Log.d( LOG_TAG, "old scale: " + scale );
+						Log.d( LOG_TAG, "old scale: " + old_scale );
+						Log.d( LOG_TAG, "new scale: " + scale );
 					}
 					
-					if( Math.abs( scale - old_default_scale ) < 0.01 ) {
-						// image has not been touched, restore the default zoom factor
-						scale = getDefaultScale( mScaleType );
-						zoomTo( scale );
-					}
+					zoomTo( scale );
 				}
 
 
@@ -265,6 +278,10 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 				
 				if ( mScaleTypeChanged ) mScaleTypeChanged = false;
 				if ( mBitmapChanged ) mBitmapChanged = false;
+				
+				if( LOG_ENABLED ) {
+					Log.d( LOG_TAG, "new scale: " + getScale() );
+				}
 			}
 		} else {
 			// drawable is null
@@ -591,10 +608,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 			matrix.postTranslate( tw, th );
 
 		} else {
-			// float tw = ( viewWidth - w ) / 2.0f;
-			// float th = ( viewHeight - h ) / 2.0f;
-			// matrix.postTranslate( tw, th );
-
 			widthScale = viewWidth / w;
 			heightScale = viewHeight / h;
 			float scale = Math.min( widthScale, heightScale );
@@ -603,6 +616,10 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 			float tw = ( viewWidth - w * scale ) / 2.0f;
 			float th = ( viewHeight - h * scale ) / 2.0f;
 			matrix.postTranslate( tw, th );
+		}
+		
+		if( LOG_ENABLED ) {
+			printMatrix( matrix );
 		}
 	}
 
@@ -634,6 +651,14 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	protected float getValue( Matrix matrix, int whichValue ) {
 		matrix.getValues( mMatrixValues );
 		return mMatrixValues[whichValue];
+	}
+	
+	public void printMatrix( Matrix matrix ) {
+		float scalex = getValue( matrix, Matrix.MSCALE_X );
+		float scaley = getValue( matrix, Matrix.MSCALE_Y );
+		float tx = getValue( matrix, Matrix.MTRANS_X );
+		float ty = getValue( matrix, Matrix.MTRANS_Y );
+		Log.d( LOG_TAG, "matrix: { x: " + tx + ", y: " + ty + ", scalex: " + scalex + ", scaley: " + scaley + " }" );
 	}
 
 	protected RectF getBitmapRect() {
