@@ -52,7 +52,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
 	
 	public static final String LOG_TAG = "ImageViewTouchBase";
-	protected static final boolean LOG_ENABLED = true;
+	protected static final boolean LOG_ENABLED = false;
 
 	public static final float ZOOM_INVALID = -1f;
 
