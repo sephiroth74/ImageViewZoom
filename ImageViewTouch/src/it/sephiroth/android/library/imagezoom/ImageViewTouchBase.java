@@ -316,6 +316,15 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		}
 	}
 	
+	/**
+	 * Restore the original display
+	 * 
+	 */
+	public void resetDisplay() {
+		mBitmapChanged = true;
+		requestLayout();
+	}
+	
 	protected float getDefaultScale( DisplayType type ) {
 		if ( type == DisplayType.FIT_TO_SCREEN ) {
 			// always fit to screen
