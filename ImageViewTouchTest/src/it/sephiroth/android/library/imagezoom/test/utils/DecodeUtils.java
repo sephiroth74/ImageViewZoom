@@ -38,7 +38,12 @@ public class DecodeUtils {
 		IOUtils.closeSilently( stream );
 
 		if ( decoded ) {
-			int sampleSize = computeSampleSize( imageSize[0], imageSize[1], (int) ( maxW * 1.2 ), (int) ( maxH * 1.2 ), orientation );
+			int sampleSize;
+			if( maxW < 0 || maxH < 0 ) {
+				sampleSize = 1;
+			} else {
+				sampleSize = computeSampleSize( imageSize[0], imageSize[1], (int) ( maxW * 1.2 ), (int) ( maxH * 1.2 ), orientation );
+			}
 
 			BitmapFactory.Options options = getDefaultOptions();
 			options.inSampleSize = sampleSize;
@@ -69,11 +74,13 @@ public class DecodeUtils {
 			IOUtils.closeSilently( stream );
 
 			if ( bitmap != null ) {
-				newBitmap = BitmapUtils.resizeBitmap( bitmap, maxW, maxH, orientation );
-				if ( bitmap != newBitmap ) {
-					bitmap.recycle();
+				if( maxW > 0 && maxH > 0 ) {
+					newBitmap = BitmapUtils.resizeBitmap( bitmap, maxW, maxH, orientation );
+					if ( bitmap != newBitmap ) {
+						bitmap.recycle();
+					}
+					bitmap = newBitmap;
 				}
-				bitmap = newBitmap;
 			}
 
 		} catch ( OutOfMemoryError error ) {

@@ -46,8 +46,19 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		void onLayoutChanged( boolean changed, int left, int top, int right, int bottom );
 	};
 
+	/**
+	 * Use this to change the {@link ImageViewTouchBase#setDisplayType(DisplayType)} of 
+	 * this View
+	 * @author alessandro
+	 *
+	 */
 	public enum DisplayType {
-		NONE, FIT_TO_SCREEN,
+		/** Image is not scaled by default */
+		NONE, 
+		/** Image will be always presented using this view's bounds */
+		FIT_TO_SCREEN, 
+		/** Image will be scaled only if bigger than the bounds of this view */
+		FIT_IF_BIGGER
 	};
 
 	
@@ -62,6 +73,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	protected Matrix mNextMatrix;
 	protected Handler mHandler = new Handler();
 	protected Runnable mLayoutRunnable = null;
+	protected boolean mUserScaled = false;
 
 	private float mMaxZoom = ZOOM_INVALID;
 	private float mMinZoom = ZOOM_INVALID;
@@ -136,6 +148,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 			if ( LOG_ENABLED ) {
 				Log.i( LOG_TAG, "setDisplayType: " + type );
 			}
+			mUserScaled = false;
 			mScaleType = type;
 			mScaleTypeChanged = true;
 			requestLayout();
@@ -207,6 +220,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 				float old_default_scale = getDefaultScale( mScaleType );
 				float old_matrix_scale = getScale( mBaseMatrix );
 				float old_scale = getScale();
+				float old_min_scale = Math.min( 1f, 1f / old_matrix_scale );
 
 				getProperBaseMatrix( drawable, mBaseMatrix );
 				
@@ -215,6 +229,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 				if( LOG_ENABLED ) {
 					Log.d( LOG_TAG, "old matrix scale: " + old_matrix_scale );
 					Log.d( LOG_TAG, "new matrix scale: " + new_matrix_scale );
+					Log.d( LOG_TAG, "old min scale: " + old_min_scale );
 					Log.d( LOG_TAG, "old scale: " + old_scale );
 				}
 
@@ -249,10 +264,16 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
 					setImageMatrix( getImageViewMatrix() );
 					postTranslate( -deltaX, -deltaY );
+
 					
-					//scale = getScale();
-					if( old_scale != 1.0f ) {
-						scale = ( old_matrix_scale / new_matrix_scale ) * old_scale;
+					if( !mUserScaled ) {
+						scale = getDefaultScale( mScaleType );
+						zoomTo( scale );
+					} else {
+						if( Math.abs( old_scale - old_min_scale ) > 0.001 ) {
+							scale = ( old_matrix_scale / new_matrix_scale ) * old_scale;
+						}
+						zoomTo( scale );
 					}
 					
 					if ( LOG_ENABLED ) {
@@ -261,9 +282,10 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 						Log.d( LOG_TAG, "new scale: " + scale );
 					}
 					
-					zoomTo( scale );
+					
 				}
-
+				
+				mUserScaled = false;
 
 				if ( scale > getMaxScale() || scale < getMinScale() ) {
 					// if current scale if outside the min/max bounds
@@ -296,10 +318,14 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	
 	protected float getDefaultScale( DisplayType type ) {
 		if ( type == DisplayType.FIT_TO_SCREEN ) {
+			// always fit to screen
 			return 1f;
-		} else {
+		} else if( type == DisplayType.FIT_IF_BIGGER ) {
 			// normal scale if smaller, fit to screen otherwise
 			return Math.min( 1f, 1f / getScale( mBaseMatrix ) );
+		} else {
+			// no scale
+			return 1f / getScale( mBaseMatrix );
 		}
 	}
 
@@ -397,7 +423,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 			mMinZoomDefined = true;
 			mMaxZoomDefined = true;
 
-			if ( mScaleType == DisplayType.FIT_TO_SCREEN ) {
+			if ( mScaleType == DisplayType.FIT_TO_SCREEN || mScaleType == DisplayType.FIT_IF_BIGGER ) {
 
 				if ( mMinZoom >= 1 ) {
 					mMinZoomDefined = false;

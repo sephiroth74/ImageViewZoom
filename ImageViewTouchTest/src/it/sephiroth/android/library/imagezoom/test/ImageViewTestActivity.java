@@ -30,6 +30,7 @@ public class ImageViewTestActivity extends Activity {
 	ImageViewTouch mImage;
 	Button mButton1;
 	Button mButton2;
+	static int displayTypeCount = 0; 
 
 	@Override
 	protected void onCreate( Bundle savedInstanceState ) {
@@ -44,7 +45,7 @@ public class ImageViewTestActivity extends Activity {
 		mImage = (ImageViewTouch) findViewById( R.id.image );
 		
 		// set the default image display type
-		mImage.setDisplayType( DisplayType.FIT_TO_SCREEN );
+		mImage.setDisplayType( DisplayType.FIT_IF_BIGGER );
 		
 		mButton1 = (Button) findViewById( R.id.button );
 		mButton2 = (Button) findViewById( R.id.button2 );
@@ -61,8 +62,13 @@ public class ImageViewTestActivity extends Activity {
 			
 			@Override
 			public void onClick( View v ) {
-				DisplayType current = mImage.getDisplayType();
-				mImage.setDisplayType( current == DisplayType.NONE ? DisplayType.FIT_TO_SCREEN : DisplayType.NONE );
+				
+				int current = mImage.getDisplayType().ordinal() + 1;
+				if( current >= DisplayType.values().length ) {
+					current = 0;
+				}
+				
+				mImage.setDisplayType( DisplayType.values()[current] );
 			}
 		} );
 		
@@ -112,7 +118,7 @@ public class ImageViewTestActivity extends Activity {
 
 				Log.d( "image", imageUri.toString() );
 				
-				final int size = 1400;
+				final int size = -1; // use the original image size
 				Bitmap bitmap = DecodeUtils.decode( this, imageUri, size, size );
 				if( null != bitmap )
 				{

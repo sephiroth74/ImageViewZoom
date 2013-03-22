@@ -139,6 +139,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		if ( mScaleDetector.isInProgress() ) return false;
 		if ( getScale() == 1f ) return false;
 
+		mUserScaled = true;
 		scrollBy( -distanceX, -distanceY );
 		invalidate();
 		return true;
@@ -149,11 +150,13 @@ public class ImageViewTouch extends ImageViewTouchBase {
 
 		if ( e1.getPointerCount() > 1 || e2.getPointerCount() > 1 ) return false;
 		if ( mScaleDetector.isInProgress() ) return false;
+		if ( getScale() == 1f ) return false;
 
 		float diffX = e2.getX() - e1.getX();
 		float diffY = e2.getY() - e1.getY();
 
 		if ( Math.abs( velocityX ) > 800 || Math.abs( velocityY ) > 800 ) {
+			mUserScaled = true;
 			scrollBy( diffX / 2, diffY / 2, 300 );
 			invalidate();
 			return true;
@@ -206,6 +209,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		public boolean onDoubleTap( MotionEvent e ) {
 			Log.i( LOG_TAG, "onDoubleTap. double tap enabled? " + mDoubleTapEnabled );
 			if ( mDoubleTapEnabled ) {
+				mUserScaled = true;
 				float scale = getScale();
 				float targetScale = scale;
 				targetScale = onDoubleTapPost( scale, getMaxScale() );
@@ -255,6 +259,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 			
 			if ( mScaleEnabled ) {
 				if( mScaled && span != 0 ) {
+					mUserScaled = true;
 					targetScale = Math.min( getMaxScale(), Math.max( targetScale, getMinScale() - 0.1f ) );
 					zoomTo( targetScale, detector.getFocusX(), detector.getFocusY() );
 					mDoubleTapDirection = 1;
