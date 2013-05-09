@@ -29,6 +29,10 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	protected boolean mScrollEnabled = true;
 	private OnImageViewTouchDoubleTapListener mDoubleTapListener;
 	private OnImageViewTouchSingleTapListener mSingleTapListener;
+	
+	public ImageViewTouch ( Context context) {
+		super( context);
+	}
 
 	public ImageViewTouch ( Context context, AttributeSet attrs ) {
 		super( context, attrs );
