@@ -103,12 +103,15 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	private OnLayoutChangeListener mOnLayoutChangeListener;
 
 	public ImageViewTouchBase( Context context ) {
-		super( context );
-		init();
+		this( context, null );
 	}
 
 	public ImageViewTouchBase( Context context, AttributeSet attrs ) {
-		super( context, attrs );
+		this( context, attrs, 0 );
+	}
+	
+	public ImageViewTouchBase( Context context, AttributeSet attrs, int defStyle ) {
+		super( context, attrs, defStyle );
 		init();
 	}
 
