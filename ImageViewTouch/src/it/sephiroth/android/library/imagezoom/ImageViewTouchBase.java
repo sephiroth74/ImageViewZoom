@@ -112,7 +112,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	
 	public ImageViewTouchBase( Context context, AttributeSet attrs, int defStyle ) {
 		super( context, attrs, defStyle );
-		init();
+		init( context, attrs, defStyle );
 	}
 
 	public void setOnDrawableChangedListener( OnDrawableChangeListener listener ) {
@@ -123,7 +123,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		mOnLayoutChangeListener = listener;
 	}
 
-	protected void init() {
+	protected void init( Context context, AttributeSet attrs, int defStyle ) {
 		setScaleType( ImageView.ScaleType.MATRIX );
 	}
 
@@ -699,7 +699,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		Log.d( LOG_TAG, "matrix: { x: " + tx + ", y: " + ty + ", scalex: " + scalex + ", scaley: " + scaley + " }" );
 	}
 
-	protected RectF getBitmapRect() {
+	public RectF getBitmapRect() {
 		return getBitmapRect( mSuppMatrix );
 	}
 

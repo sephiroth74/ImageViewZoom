@@ -35,12 +35,16 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	}
 
 	public ImageViewTouch ( Context context, AttributeSet attrs ) {
-		super( context, attrs );
+		this( context, attrs, 0 );
+	}
+	
+	public ImageViewTouch ( Context context, AttributeSet attrs, int defStyle ) {
+		super( context, attrs, defStyle );
 	}
 
 	@Override
-	protected void init() {
-		super.init();
+	protected void init(Context context, AttributeSet attrs, int defStyle) {
+		super.init( context, attrs, defStyle );
 		mTouchSlop = ViewConfiguration.get( getContext() ).getScaledTouchSlop();
 		mGestureListener = getGestureListener();
 		mScaleListener = getScaleListener();
@@ -100,10 +104,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		int action = event.getAction();
 		switch ( action & MotionEvent.ACTION_MASK ) {
 			case MotionEvent.ACTION_UP:
-				if ( getScale() < getMinScale() ) {
-					zoomTo( getMinScale(), 50 );
-				}
-				break;
+				return onUp( event );
 		}
 		return true;
 	}
@@ -134,15 +135,13 @@ public class ImageViewTouch extends ImageViewTouchBase {
 			return 1f;
 		}
 	}
+	
+	public boolean onSingleTapConfirmed( MotionEvent e ) {
+		return true;
+	}
 
 	public boolean onScroll( MotionEvent e1, MotionEvent e2, float distanceX, float distanceY ) {
-		if ( !mScrollEnabled ) return false;
-
-		if ( e1 == null || e2 == null ) return false;
-		if ( e1.getPointerCount() > 1 || e2.getPointerCount() > 1 ) return false;
-		if ( mScaleDetector.isInProgress() ) return false;
 		if ( getScale() == 1f ) return false;
-
 		mUserScaled = true;
 		scrollBy( -distanceX, -distanceY );
 		invalidate();
@@ -150,12 +149,6 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	}
 
 	public boolean onFling( MotionEvent e1, MotionEvent e2, float velocityX, float velocityY ) {
-		if ( !mScrollEnabled ) return false;
-
-		if ( e1.getPointerCount() > 1 || e2.getPointerCount() > 1 ) return false;
-		if ( mScaleDetector.isInProgress() ) return false;
-		if ( getScale() == 1f ) return false;
-
 		float diffX = e2.getX() - e1.getX();
 		float diffY = e2.getY() - e1.getY();
 
@@ -166,6 +159,21 @@ public class ImageViewTouch extends ImageViewTouchBase {
 			return true;
 		}
 		return false;
+	}
+	
+	public boolean onDown( MotionEvent e ) {
+		return true;
+	}
+	
+	public boolean onUp( MotionEvent e ) {
+		if ( getScale() < getMinScale() ) {
+			zoomTo( getMinScale(), 50 );
+		}
+		return true;
+	}
+	
+	public boolean onSingleTapUp( MotionEvent e ) {
+		return true;
 	}
 
 	/**
@@ -206,7 +214,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 				mSingleTapListener.onSingleTapConfirmed();
 			}
 
-			return super.onSingleTapConfirmed( e );
+			return ImageViewTouch.this.onSingleTapConfirmed( e );
 		}
 
 		@Override
@@ -241,12 +249,33 @@ public class ImageViewTouch extends ImageViewTouchBase {
 
 		@Override
 		public boolean onScroll( MotionEvent e1, MotionEvent e2, float distanceX, float distanceY ) {
+			
+			if ( !mScrollEnabled ) return false;
+			if ( e1 == null || e2 == null ) return false;
+			if ( e1.getPointerCount() > 1 || e2.getPointerCount() > 1 ) return false;
+			if ( mScaleDetector.isInProgress() ) return false;
 			return ImageViewTouch.this.onScroll( e1, e2, distanceX, distanceY );
 		}
-
+		
 		@Override
 		public boolean onFling( MotionEvent e1, MotionEvent e2, float velocityX, float velocityY ) {
+			if ( !mScrollEnabled ) return false;
+
+			if ( e1.getPointerCount() > 1 || e2.getPointerCount() > 1 ) return false;
+			if ( mScaleDetector.isInProgress() ) return false;
+			if ( getScale() == 1f ) return false;
+
 			return ImageViewTouch.this.onFling( e1, e2, velocityX, velocityY );
+		}
+		
+		@Override
+		public boolean onSingleTapUp( MotionEvent e ) {
+			return ImageViewTouch.this.onSingleTapUp( e );
+		}
+		
+		@Override
+		public boolean onDown( MotionEvent e ) {
+			return ImageViewTouch.this.onDown( e );
 		}
 	}
 
@@ -277,6 +306,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 			}
 			return true;
 		}
+		
 	}
 
 	public interface OnImageViewTouchDoubleTapListener {
