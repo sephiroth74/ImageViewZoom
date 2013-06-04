@@ -17,3 +17,5 @@ local.properties
 
 # Maven generated files
 target/
+
+lint.xml
