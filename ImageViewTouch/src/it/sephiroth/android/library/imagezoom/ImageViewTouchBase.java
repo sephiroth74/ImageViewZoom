@@ -328,6 +328,15 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		requestLayout();
 	}
 	
+	public void resetMatrix() {
+		if( LOG_ENABLED ) {
+			Log.i( LOG_TAG, "resetMatrix" );
+		}
+		mSuppMatrix = new Matrix();
+		setImageMatrix( getImageViewMatrix() );
+		postInvalidate();
+	}
+	
 	protected float getDefaultScale( DisplayType type ) {
 		if ( type == DisplayType.FIT_TO_SCREEN ) {
 			// always fit to screen
