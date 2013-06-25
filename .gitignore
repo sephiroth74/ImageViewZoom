@@ -21,3 +21,7 @@ target/
 lint.xml
 
 .DS_Store
+
+# IntelliJ IDEA
+.idea
+*.iml
