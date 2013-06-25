@@ -33,7 +33,6 @@ The default display state is `DisplayState.NONE'.
         <groupId>it.sephiroth.android.library.imagezoom</groupId>
         <artifactId>image-view-zoom</artifactId>
         <version>1.0.0</version>
-        <type>apklib</type>
     </dependency>
 
 
