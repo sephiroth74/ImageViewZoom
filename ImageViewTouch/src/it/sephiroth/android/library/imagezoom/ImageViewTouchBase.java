@@ -241,6 +241,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
 					if( LOG_ENABLED ) {
 						Log.d( LOG_TAG, "display type: " + mScaleType );
+						Log.d( LOG_TAG, "newMatrix: " + mNextMatrix );
 					}
 
 					if ( mNextMatrix != null ) {
@@ -333,7 +334,18 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 			Log.i( LOG_TAG, "resetMatrix" );
 		}
 		mSuppMatrix = new Matrix();
+		
+		float scale = getDefaultScale( mScaleType );
 		setImageMatrix( getImageViewMatrix() );
+
+		if( LOG_ENABLED ) {
+			Log.d( LOG_TAG, "default scale: " + scale + ", scale: " +  getScale() );
+		}
+		
+		if ( scale != getScale() ) {
+			zoomTo( scale );
+		}		
+		
 		postInvalidate();
 	}
 	
@@ -812,8 +824,17 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	}
 
 	protected void zoomTo( float scale ) {
+		if( LOG_ENABLED ) {
+			Log.i( LOG_TAG, "zoomTo: " + scale );
+		}
+		
 		if ( scale > getMaxScale() ) scale = getMaxScale();
 		if ( scale < getMinScale() ) scale = getMinScale();
+		
+		if( LOG_ENABLED ) {
+			Log.d( LOG_TAG, "sanitized scale: " + scale );
+		}
+		
 
 		PointF center = getCenter();
 		zoomTo( scale, center.x, center.y );
