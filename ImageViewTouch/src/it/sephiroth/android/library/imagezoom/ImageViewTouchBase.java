@@ -458,12 +458,12 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
 			if ( mScaleType == DisplayType.FIT_TO_SCREEN || mScaleType == DisplayType.FIT_IF_BIGGER ) {
 
-				if ( mMinZoom >= 1 ) {
+				if ( mMinZoom > 1 ) {
 					mMinZoomDefined = false;
 					mMinZoom = ZOOM_INVALID;
 				}
 
-				if ( mMaxZoom <= 1 ) {
+				if ( mMaxZoom < 1 ) {
 					mMaxZoomDefined = true;
 					mMaxZoom = ZOOM_INVALID;
 				}
