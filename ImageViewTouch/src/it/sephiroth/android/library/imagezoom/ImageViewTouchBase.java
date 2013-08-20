@@ -751,6 +751,10 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	public float getScale() {
 		return getScale( mSuppMatrix );
 	}
+	
+	public float getBaseScale() {
+		return getScale( mBaseMatrix );
+	}
 
 	protected void center( boolean horizontal, boolean vertical ) {
 		final Drawable drawable = getDrawable();
