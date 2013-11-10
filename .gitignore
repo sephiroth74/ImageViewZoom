@@ -25,3 +25,11 @@ lint.xml
 # IntelliJ IDEA
 .idea
 *.iml
+
+library/build/
+library/gen/
+
+demo/build/
+demo/gen/
+
+.gradle

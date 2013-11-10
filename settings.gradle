@@ -1,0 +1,4 @@
+rootProject.name = 'imageviewtouch'
+
+include ':library'
+include ':demo'

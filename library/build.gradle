@@ -1,0 +1,81 @@
+
+
+apply plugin: 'android-library'
+apply plugin: 'maven-publish'
+apply plugin: 'maven'
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "18.0.1"
+
+    defaultConfig {
+        versionCode 1
+        versionName version
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            res.srcDirs = ['res']
+        }
+    }
+}
+
+project.ext {
+    outJar = rootProject.name + '-' + version + '.jar'
+}
+
+task clearJar(type: Delete) {
+    println "[clearJar]"
+    delete 'build/libs/' + project.ext.outJar
+}
+
+task makeJar(type: Copy) {
+    println "[makeJar] " + outJar
+    from('build/bundles/release/')
+    into('build/libs/')
+    include('classes.jar')
+    rename ('classes.jar', project.ext.outJar)
+}
+
+makeJar.dependsOn(clearJar, build)
+
+
+build << {
+    makeJar.execute()
+}
+
+task createPom << {
+
+    pom {
+        project {
+            groupId 'it.sephiroth.android'
+            artifactId rootProject.name
+            version version
+
+            inceptionYear '2012'
+            description 'Android ImageView widget with zoom and pan capabilities'
+            url 'https://github.com/sephiroth74/ImageViewZoom'
+            licenses {
+                license {
+                    name 'The MIT License'
+                    url 'http://www.opensource.org/licenses/mit-license.php'
+                    distribution 'repo'
+                }
+            }
+        }
+    }.writeTo("pom.xml")
+}
+
+
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "file://$System.env.HOME/.m2/repository/")
+            pom.version = rootProject.version
+            pom.artifactId = rootProject.name
+        }
+    }
+}
