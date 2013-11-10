@@ -2,11 +2,10 @@
 
 apply plugin: 'android-library'
 apply plugin: 'maven-publish'
-apply plugin: 'maven'
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "18.0.1"
+    buildToolsVersion "18.1.1"
 
     defaultConfig {
         versionCode 1
@@ -17,7 +16,11 @@ android {
         main {
             manifest.srcFile 'AndroidManifest.xml'
             java.srcDirs = ['src']
+            resources.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
             res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
         }
     }
 }

@@ -2,9 +2,9 @@
 <ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
 	<info organisation="it.sephiroth.android"
 		module="imageviewtouch"
-		revision="1.0.1"
+		revision="1.0.0"
 		status="integration"
-		publication="20131109195130"
+		publication="20131110115911"
 	/>
 	<configurations>
 		<conf name="archives" visibility="public" description="Configuration for archive artifacts."/>
