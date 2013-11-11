@@ -30,20 +30,19 @@ project.ext {
 }
 
 task clearJar(type: Delete) {
-    println "[clearJar]"
     delete 'build/libs/' + project.ext.outJar
 }
 
 task makeJar(type: Copy) {
-    println "[makeJar] " + outJar
     from('build/bundles/release/')
     into('build/libs/')
     include('classes.jar')
     rename ('classes.jar', project.ext.outJar)
 }
 
-makeJar.dependsOn(clearJar, build)
-
+makeJar.dependsOn(clearJar)
+build.dependsOn(makeJar)
+build.dependsOn(uploadArchives)
 
 build << {
     makeJar.execute()
