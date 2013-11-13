@@ -4,7 +4,7 @@
 		module="imageviewtouch"
 		revision="1.0.0"
 		status="integration"
-		publication="20131113122502"
+		publication="20131113164322"
 	/>
 	<configurations>
 		<conf name="archives" visibility="public" description="Configuration for archive artifacts."/>
