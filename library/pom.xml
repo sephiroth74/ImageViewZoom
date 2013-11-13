@@ -2,17 +2,34 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>it.sephiroth.android</groupId>
-  <artifactId>imageviewtouch</artifactId>
-  <version>1.0.1</version>
+  <groupId>it.sephiroth.android.library.imagezoom</groupId>
+  <artifactId>imageviewzoom</artifactId>
+  <version>1.0.0</version>
   <description>Android ImageView widget with zoom and pan capabilities</description>
   <url>https://github.com/sephiroth74/ImageViewZoom</url>
   <inceptionYear>2012</inceptionYear>
   <licenses>
     <license>
-      <name>The MIT License</name>
-      <url>http://www.opensource.org/licenses/mit-license.php</url>
+      <name>MIT license</name>
+      <url>http://opensource.org/licenses/mit-license.php</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
+  <developers>
+    <developer>
+      <id>sephiroth74</id>
+      <name>Alessandro Crugnola</name>
+      <email>alessandro.crugnola@gmail.com</email>
+      <url>http://blog.sephiroth.it</url>
+      <roles>
+        <role>author</role>
+        <role>developer</role>
+      </roles>
+    </developer>
+  </developers>
+  <scm>
+    <connection>scm:git@github.com:sephiroth74/ImageViewZoom.git</connection>
+    <developerConnection>scm:git@github.com:sephiroth74/ImageViewZoom.git</developerConnection>
+    <url>scm:git@github.com:sephiroth74/ImageViewZoom.git</url>
+  </scm>
 </project>
