@@ -49,6 +49,7 @@ def generatePom() {
             groupId groupId
             artifactId 'imageviewzoom'
             version version
+            packaging 'aar'
             description 'Android ImageView widget with zoom and pan capabilities'
             inceptionYear '2012'
             url 'https://github.com/sephiroth74/ImageViewZoom'
