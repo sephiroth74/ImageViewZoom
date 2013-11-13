@@ -29,8 +29,8 @@
     </developer>
   </developers>
   <scm>
-    <connection>scm:git@github.com:sephiroth74/ImageViewZoom.git</connection>
-    <developerConnection>scm:git@github.com:sephiroth74/ImageViewZoom.git</developerConnection>
-    <url>scm:git@github.com:sephiroth74/ImageViewZoom.git</url>
+    <connection>scm:git:git@github.com:sephiroth74/ImageViewZoom.git</connection>
+    <developerConnection>scm:git:git@github.com:sephiroth74/ImageViewZoom.git</developerConnection>
+    <url>scm:git:git@github.com:sephiroth74/ImageViewZoom.git</url>
   </scm>
 </project>

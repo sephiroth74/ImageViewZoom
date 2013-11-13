@@ -63,9 +63,9 @@ def generatePom() {
             }
 
             scm {
-                url                 "scm:git@github.com:sephiroth74/ImageViewZoom.git"
-                connection          "scm:git@github.com:sephiroth74/ImageViewZoom.git"
-                developerConnection "scm:git@github.com:sephiroth74/ImageViewZoom.git"
+                url                 "scm:git:git@github.com:sephiroth74/ImageViewZoom.git"
+                connection          "scm:git:git@github.com:sephiroth74/ImageViewZoom.git"
+                developerConnection "scm:git:git@github.com:sephiroth74/ImageViewZoom.git"
             }
 
 
