@@ -26,8 +26,8 @@ lint.xml
 .idea
 *.iml
 
-library/build/
-library/gen/
+imageviewzoom/build/
+imageviewzoom/gen/
 
 demo/build/
 demo/gen/

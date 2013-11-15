@@ -14,9 +14,6 @@ allprojects {
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
 
-    group = 'it.sephiroth.android.library.imagezoom'
-    version = '1.0.0'
-
     repositories {
         mavenCentral()
         mavenLocal()

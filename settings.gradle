@@ -1,4 +1,4 @@
-rootProject.name = 'imageviewtouch'
+rootProject.name = 'imageviewzoom'
 
-include ':library'
+include ':imageviewzoom'
 include ':demo'

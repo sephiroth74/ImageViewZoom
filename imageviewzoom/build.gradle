@@ -2,6 +2,8 @@
 
 apply plugin: 'android-library'
 
+group 'it.sephiroth.android.library.imageviewzoom'
+version '1.0.0'
 
 android {
     compileSdkVersion 19
@@ -27,8 +29,14 @@ android {
     }
 }
 
+task displayInfo << {
+    logger.lifecycle "  project name: ${project.name} (root: ${rootProject.name})"
+    logger.lifecycle "  project version: ${project.version}"
+    logger.lifecycle "  project group: ${project.group}"
+}
+
 project.ext {
-    outJar = rootProject.name + '-' + version + '.jar'
+    outJar = project.name + '-' + version + '.jar'
 }
 
 task clearJar(type: Delete) {
@@ -46,10 +54,9 @@ task makeJar(type: Copy) {
 def generatePom() {
     def pom = pom{
         project {
-            groupId groupId
-            artifactId 'imageviewzoom'
-            version version
-            packaging 'aar'
+            groupId project.group
+            artifactId project.name
+            version project.version
             description 'Android ImageView widget with zoom and pan capabilities'
             inceptionYear '2012'
             url 'https://github.com/sephiroth74/ImageViewZoom'

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger>
+
+    <dataSet config="main" >
+        <source path="/Users/alessandro/Documents/git/AviaryInc/Android-SDK/ImageViewZoom/imageviewzoom/res" />
+        <source path="/Users/alessandro/Documents/git/AviaryInc/Android-SDK/ImageViewZoom/imageviewzoom/build/res/rs/release" />
+    </dataSet>
+    <dataSet config="release" >
+        <source path="/Users/alessandro/Documents/git/AviaryInc/Android-SDK/ImageViewZoom/imageviewzoom/src/release/res" />
+    </dataSet>
+
+</merger>
