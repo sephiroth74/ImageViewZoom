@@ -30,6 +30,12 @@
   <scm>
     <connection>scm:git:git@github.com:sephiroth74/ImageViewZoom.git</connection>
     <developerConnection>scm:git:git@github.com:sephiroth74/ImageViewZoom.git</developerConnection>
-    <url>scm:git:git@github.com:sephiroth74/ImageViewZoom.git</url>
+    <url>https://github.com/sephiroth74/ImageViewZoom</url>
   </scm>
+  <repositories>
+    <repository>
+      <id>s3.release</id>
+      <url>http://maven.aviary.com/repo/release</url>
+    </repository>
+  </repositories>
 </project>

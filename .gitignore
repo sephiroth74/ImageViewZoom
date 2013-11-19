@@ -31,5 +31,5 @@ imageviewzoom/gen/
 
 demo/build/
 demo/gen/
-
+build/
 .gradle

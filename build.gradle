@@ -18,6 +18,14 @@ allprojects {
         mavenCentral()
         mavenLocal()
     }
+
+    configurations {
+        deployerJars
+    }
+
+    dependencies {
+        deployerJars "org.kuali.maven.wagons:maven-s3-wagon:1.1.20"
+    }
 }
 
 task wrapper(type: Wrapper) {
