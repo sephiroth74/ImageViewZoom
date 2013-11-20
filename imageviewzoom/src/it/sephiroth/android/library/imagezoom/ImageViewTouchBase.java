@@ -24,7 +24,7 @@ import android.widget.ImageView;
  */
 public abstract class ImageViewTouchBase extends ImageView implements IDisposable {
 
-	public static final String VERSION = "1.0.0";
+	public static final String VERSION = "1.0.0-SNAPSHOT";
 
 	public interface OnDrawableChangeListener {
 

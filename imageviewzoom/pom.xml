@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>it.sephiroth.android.library.imageviewzoom</groupId>
   <artifactId>imageviewzoom</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.0-SNAPSHOT</version>
   <description>Android ImageView widget with zoom and pan capabilities</description>
   <url>https://github.com/sephiroth74/ImageViewZoom</url>
   <inceptionYear>2012</inceptionYear>
@@ -34,8 +34,24 @@
   </scm>
   <repositories>
     <repository>
-      <id>s3.release</id>
+      <id>aviary-release</id>
       <url>http://maven.aviary.com/repo/release</url>
+    </repository>
+    <repository>
+      <id>aviary-snapshot</id>
+      <url>http://maven.aviary.com/repo/snapshot</url>
+    </repository>
+    <repository>
+      <id>MavenRepo2</id>
+      <url>http://repo1.maven.org/maven2/</url>
+    </repository>
+    <repository>
+      <id>aviary-release2</id>
+      <url>http://maven.aviary.com/repo/release</url>
+    </repository>
+    <repository>
+      <id>aviary-snapshot2</id>
+      <url>http://maven.aviary.com/repo/snapshot</url>
     </repository>
   </repositories>
 </project>

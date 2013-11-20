@@ -1,4 +1,6 @@
 rootProject.name = 'imageviewzoom'
 
+gradle.ext.versionModifier = '-SNAPSHOT'
+
 include ':imageviewzoom'
 include ':demo'
