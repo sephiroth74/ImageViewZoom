@@ -16,10 +16,6 @@ allprojects {
     repositories {
         mavenCentral()
         mavenLocal()
-        maven {
-            name 'snoatype-staging'
-            url 'https://oss.sonatype.org/content/groups/staging'
-        }
     }
 }
 
