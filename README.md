@@ -1,5 +1,5 @@
-ImageViewTouch Widget
-----
+ImageViewTouch for Android
+===
 
 
 ImageViewTouch is an android `ImageView` widget with zoom and pan capabilities.
@@ -49,4 +49,4 @@ http://opensource.org/licenses/mit-license.php
 
 ##Author
 
-Alessandro Crugnola
+[Alessandro Crugnola](http://blog.sephiroth.it)

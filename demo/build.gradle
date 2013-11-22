@@ -3,7 +3,7 @@ apply plugin: 'android'
 
 dependencies {
     compile project(':library')
-    //compile 'it.sephiroth.android.library.imagezoom:library:+'
+    // compile 'it.sephiroth.android.library.imagezoom:library:+'
 }
 
 android {

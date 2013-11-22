@@ -3,7 +3,7 @@ apply plugin: 'android-library'
 apply plugin: 'signing'
 
 group 'it.sephiroth.android.library.imagezoom'
-version '1.0.2'
+version '1.0.3'
 
 android {
     compileSdkVersion 19
@@ -157,8 +157,17 @@ task updateVersion {
     }
 }
 
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.allSource
+}
+
 signing {
     sign configurations.archives
+}
+
+artifacts {
+    archives sourcesJar
 }
 
 dependencies {
