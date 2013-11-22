@@ -2,7 +2,7 @@
 apply plugin: 'android'
 
 dependencies {
-    compile project(':imageviewzoom')
+    compile project(':library')
 }
 
 android {

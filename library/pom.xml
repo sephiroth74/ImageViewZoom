@@ -2,11 +2,12 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>it.sephiroth.android.library.imageviewzoom</groupId>
-  <artifactId>imageviewzoom</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <groupId>it.sephiroth.android.library.imagezoom</groupId>
+  <artifactId>library</artifactId>
+  <version>1.0.1</version>
+  <name>ImageViewZoom</name>
   <description>Android ImageView widget with zoom and pan capabilities</description>
-  <url>https://github.com/sephiroth74/ImageViewZoom</url>
+  <url>http://blog.sephiroth.it</url>
   <inceptionYear>2012</inceptionYear>
   <licenses>
     <license>
@@ -32,26 +33,12 @@
     <developerConnection>scm:git:git@github.com:sephiroth74/ImageViewZoom.git</developerConnection>
     <url>https://github.com/sephiroth74/ImageViewZoom</url>
   </scm>
-  <repositories>
-    <repository>
-      <id>aviary-release</id>
-      <url>http://maven.aviary.com/repo/release</url>
-    </repository>
-    <repository>
-      <id>aviary-snapshot</id>
-      <url>http://maven.aviary.com/repo/snapshot</url>
-    </repository>
-    <repository>
-      <id>MavenRepo2</id>
-      <url>http://repo1.maven.org/maven2/</url>
-    </repository>
-    <repository>
-      <id>aviary-release2</id>
-      <url>http://maven.aviary.com/repo/release</url>
-    </repository>
-    <repository>
-      <id>aviary-snapshot2</id>
-      <url>http://maven.aviary.com/repo/snapshot</url>
-    </repository>
-  </repositories>
+  <dependencies>
+    <dependency>
+      <groupId>it.sephiroth.android.library.easing</groupId>
+      <artifactId>library</artifactId>
+      <version>+</version>
+      <scope>compile</scope>
+    </dependency>
+  </dependencies>
 </project>

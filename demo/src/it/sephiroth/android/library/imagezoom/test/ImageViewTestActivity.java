@@ -37,6 +37,8 @@ public class ImageViewTestActivity extends Activity {
 		super.onCreate( savedInstanceState );
 		requestWindowFeature( Window.FEATURE_NO_TITLE );
 		setContentView( R.layout.main );
+
+		Toast.makeText(this, "ImageViewTouch.VERSION: "  + ImageViewTouch.VERSION, Toast.LENGTH_SHORT).show();
 	}
 
 	@Override

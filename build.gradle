@@ -2,9 +2,6 @@ buildscript {
     repositories {
         mavenCentral()
         mavenLocal()
-        maven {
-            url uri(mavenDownloadServer + mavenRepo + mavenReleases)
-        }
     }
 
     dependencies {
@@ -12,30 +9,16 @@ buildscript {
     }
 }
 
-
 allprojects {
     apply plugin: 'maven'
     apply plugin: 'maven-publish'
-
-    configurations {
-        deployerJars
-    }
-
-    dependencies {
-        deployerJars "org.kuali.maven.wagons:maven-s3-wagon:1.1.20"
-    }
 
     repositories {
         mavenCentral()
         mavenLocal()
         maven {
-            name 'aviary-release'
-            url uri(mavenDownloadServer + mavenRepo + mavenReleases)
-        }
-
-        maven {
-            name 'aviary-snapshot'
-            url uri(mavenDownloadServer + mavenRepo + mavenSnapshot)
+            name 'snoatype-staging'
+            url 'https://oss.sonatype.org/content/groups/staging'
         }
     }
 }

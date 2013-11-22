@@ -35,6 +35,11 @@ The default display state is `DisplayState.NONE'.
         <version>1.0.0</version>
     </dependency>
 
+##Usage (Gradle)
+
+	dependencies {
+		compile 'it.sephiroth.android.library.imagezoom:imagezoom:+'
+	}
 
 ##LICENSE
 
