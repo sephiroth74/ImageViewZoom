@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>it.sephiroth.android.library.imagezoom</groupId>
   <artifactId>library</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <name>ImageViewZoom</name>
   <description>Android ImageView widget with zoom and pan capabilities</description>
   <url>http://blog.sephiroth.it</url>

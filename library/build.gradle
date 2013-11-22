@@ -3,7 +3,7 @@ apply plugin: 'android-library'
 apply plugin: 'signing'
 
 group 'it.sephiroth.android.library.imagezoom'
-version '1.0.1'
+version '1.0.2'
 
 android {
     compileSdkVersion 19
