@@ -47,6 +47,14 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		 */
 		void onLayoutChanged( boolean changed, int left, int top, int right, int bottom );
 	};
+	
+	public interface OnScaleChangeListener {
+	    /**
+	     * Callback invoked when the user scale status has changed
+	     * @param isScaled
+	     */
+	    void onScaleChanged(boolean isScaled);
+	}
 
 	/**
 	 * Use this to change the {@link ImageViewTouchBase#setDisplayType(DisplayType)} of 
@@ -90,6 +98,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	private int mThisWidth = -1;
 	private int mThisHeight = -1;
 	private PointF mCenter = new PointF();
+	private float mOldScale;
 
 	protected DisplayType mScaleType = DisplayType.NONE;
 	private boolean mScaleTypeChanged;
@@ -103,6 +112,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
 	private OnDrawableChangeListener mDrawableChangeListener;
 	private OnLayoutChangeListener mOnLayoutChangeListener;
+	private OnScaleChangeListener mOnScaleChangeListener;
 
 	public ImageViewTouchBase( Context context ) {
 		this( context, null );
@@ -123,6 +133,10 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	
 	public void setOnLayoutChangeListener( OnLayoutChangeListener listener ) {
 		mOnLayoutChangeListener = listener;
+	}
+	
+	public void setOnScaleChangeListener( OnScaleChangeListener listener ) {
+	    mOnScaleChangeListener = listener;
 	}
 
 	protected void init( Context context, AttributeSet attrs, int defStyle ) {
@@ -509,6 +523,12 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 			mDrawableChangeListener.onDrawableChanged( drawable );
 		}
 	}
+	
+	protected void fireOnScaleChanged() {
+	    if (null != mOnScaleChangeListener) {
+	        mOnScaleChangeListener.onScaleChanged(getMinScale() != getScale());
+	    }
+	}
 
 	/**
 	 * Called just after {@link #onLayout(boolean, int, int, int, int)}
@@ -757,6 +777,10 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	public float getBaseScale() {
 		return getScale( mBaseMatrix );
 	}
+	
+	public boolean isUserScaled() {
+	    return mUserScaled;
+	}
 
 	protected void center( boolean horizontal, boolean vertical ) {
 		final Drawable drawable = getDrawable();
@@ -869,7 +893,12 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		center( true, true );
 	}
 
-	protected void onZoom( float scale ){}
+	protected void onZoom( float scale ) {
+	    if (scale != mOldScale) { 
+	        fireOnScaleChanged();
+	    }
+	    mOldScale = scale;
+	}
 
 	protected void onZoomAnimationCompleted( float scale ){}
 
