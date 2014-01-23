@@ -2,12 +2,19 @@
 apply plugin: 'android-library'
 apply plugin: 'signing'
 
+ext.versionModifier = ''
+
 group 'it.sephiroth.android.library.imagezoom'
-version '1.0.3'
+version '1.0.4' + ext.versionModifier
+
+
+dependencies {
+    compile 'it.sephiroth.android.library.easing:library:1.0.2' + ext.versionModifier
+}
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "18.1.1"
+    buildToolsVersion "19.0.1"
 
     defaultConfig {
         versionCode 1
@@ -168,10 +175,6 @@ signing {
 
 artifacts {
     archives sourcesJar
-}
-
-dependencies {
-    compile 'it.sephiroth.android.library.easing:library:+'
 }
 
 clean.dependsOn(clearJar)
