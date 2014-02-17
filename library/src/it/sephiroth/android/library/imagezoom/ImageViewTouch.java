@@ -176,6 +176,11 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		return true;
 	}
 
+    @Override
+    public boolean canScrollHorizontally(int direction) {
+        return canScroll(-direction);
+    }
+
 	/**
 	 * Determines whether this ImageViewTouch can be scrolled.
 	 * 
@@ -205,7 +210,28 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		return bitmapScrollRectDelta > SCROLL_DELTA_THRESHOLD;
 	}
 
-	public class GestureListener extends GestureDetector.SimpleOnGestureListener {
+    @Override
+    public boolean canScrollVertically(int direction) {
+        RectF bitmapRect = getBitmapRect();
+        updateRect( bitmapRect, mScrollRect );
+        Rect imageViewRect = new Rect();
+        getGlobalVisibleRect( imageViewRect );
+
+        if( null == bitmapRect ) {
+            return false;
+        }
+
+        if ( bitmapRect.bottom >= imageViewRect.bottom ) {
+            if ( direction < 0 ) {
+                return Math.abs( bitmapRect.bottom - imageViewRect.bottom ) > SCROLL_DELTA_THRESHOLD;
+            }
+        }
+
+        double bitmapScrollRectDelta = Math.abs( bitmapRect.top - mScrollRect.top );
+        return bitmapScrollRectDelta > SCROLL_DELTA_THRESHOLD;
+    }
+
+    public class GestureListener extends GestureDetector.SimpleOnGestureListener {
 
 		@Override
 		public boolean onSingleTapConfirmed( MotionEvent e ) {
