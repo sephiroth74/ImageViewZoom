@@ -1,2 +1,4 @@
 include ':library'
 include ':demo'
+
+project(":library").name = "imagezoom"

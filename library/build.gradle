@@ -2,19 +2,18 @@
 apply plugin: 'android-library'
 apply plugin: 'signing'
 
-ext.versionModifier = ''
 
 group 'it.sephiroth.android.library.imagezoom'
-version '1.0.4' + ext.versionModifier
+version '1.0.5'
 
 
 dependencies {
-    compile 'it.sephiroth.android.library.easing:library:1.0.2' + ext.versionModifier
+    compile 'it.sephiroth.android.library.easing:android-easing:1.0.3'
 }
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.0.1"
+    buildToolsVersion "19.0.3"
 
     defaultConfig {
         versionCode 1
@@ -36,32 +35,11 @@ android {
     }
 }
 
-task displayInfo() {
-    doLast {
-        logger.lifecycle "  project name: ${project.name} (root: ${rootProject.name})"
-        logger.lifecycle "  project version: ${project.version}"
-        logger.lifecycle "  project group: ${project.group}"
-    }
-}
-
-project.ext.outJar = project.name + '-' + version + '.jar'
-
-task clearJar(type: Delete) {
-    delete 'build/libs/' + project.ext.outJar
-}
-
-task makeJar(type: Copy) {
-    from('build/bundles/release/')
-    into('build/libs/')
-    include('classes.jar')
-    rename ('classes.jar', project.ext.outJar)
-}
-
-
 def generatePom() {
     def pom = pom{
         project {
             name 'ImageViewZoom'
+            packaging 'aar'
             groupId project.group
             artifactId project.name
             version project.version
@@ -97,15 +75,6 @@ def generatePom() {
                 }
             }
         }
-    }
-}
-
-task writePom {
-    ext.pomXml = file("pom.xml")
-    inputs.file(project.buildFile)
-    outputs.file(pomXml)
-    doLast {
-        generatePom().writeTo(pomXml)
     }
 }
 
@@ -164,20 +133,7 @@ task updateVersion {
     }
 }
 
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from android.sourceSets.main.allSource
-}
-
 signing {
+    required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
     sign configurations.archives
 }
-
-artifacts {
-    archives sourcesJar
-}
-
-clean.dependsOn(clearJar)
-uploadArchives.dependsOn(build)
-build.dependsOn(writePom, makeJar)
-preBuild.dependsOn(updateVersion)

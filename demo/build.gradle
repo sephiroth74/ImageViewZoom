@@ -2,12 +2,12 @@
 apply plugin: 'android'
 
 dependencies {
-    compile project(':library')
+    compile project(':imagezoom')
 }
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.0.1"
+    buildToolsVersion "19.0.3"
 
     defaultConfig {
         versionCode 1

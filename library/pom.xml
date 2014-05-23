@@ -3,8 +3,9 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>it.sephiroth.android.library.imagezoom</groupId>
-  <artifactId>library</artifactId>
-  <version>1.0.4</version>
+  <artifactId>imagezoom</artifactId>
+  <version>1.0.5-SNAPSHOT</version>
+  <packaging>aar</packaging>
   <name>ImageViewZoom</name>
   <description>Android ImageView widget with zoom and pan capabilities</description>
   <url>http://blog.sephiroth.it</url>
@@ -33,12 +34,4 @@
     <developerConnection>scm:git:git@github.com:sephiroth74/ImageViewZoom.git</developerConnection>
     <url>https://github.com/sephiroth74/ImageViewZoom</url>
   </scm>
-  <dependencies>
-    <dependency>
-      <groupId>it.sephiroth.android.library.easing</groupId>
-      <artifactId>library</artifactId>
-      <version>1.0.2</version>
-      <scope>compile</scope>
-    </dependency>
-  </dependencies>
 </project>

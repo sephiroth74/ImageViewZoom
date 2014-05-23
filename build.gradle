@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.7.3'
+        classpath 'com.android.tools.build:gradle:0.10.2'
     }
 }
 
@@ -19,9 +19,12 @@ allprojects {
         maven {
             url uri("https://oss.sonatype.org/content/repositories/snapshots")
         }
+        maven {
+            url uri("https://oss.sonatype.org/content/repositories/releases")
+        }
     }
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.9'
+    gradleVersion = '1.12'
 }
