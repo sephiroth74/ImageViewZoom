@@ -658,26 +658,14 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		float widthScale, heightScale;
 		matrix.reset();
 
-		if ( w > viewWidth || h > viewHeight ) {
-			widthScale = viewWidth / w;
-			heightScale = viewHeight / h;
-			float scale = Math.min( widthScale, heightScale );
-			matrix.postScale( scale, scale );
+		widthScale = viewWidth / w;
+		heightScale = viewHeight / h;
+		float scale = Math.min( widthScale, heightScale );
+		matrix.postScale( scale, scale );
 
-			float tw = ( viewWidth - w * scale ) / 2.0f;
-			float th = ( viewHeight - h * scale ) / 2.0f;
-			matrix.postTranslate( tw, th );
-
-		} else {
-			widthScale = viewWidth / w;
-			heightScale = viewHeight / h;
-			float scale = Math.min( widthScale, heightScale );
-			matrix.postScale( scale, scale );
-
-			float tw = ( viewWidth - w * scale ) / 2.0f;
-			float th = ( viewHeight - h * scale ) / 2.0f;
-			matrix.postTranslate( tw, th );
-		}
+		float tw = ( viewWidth - w * scale ) / 2.0f;
+		float th = ( viewHeight - h * scale ) / 2.0f;
+		matrix.postTranslate( tw, th );
 		
 		if( LOG_ENABLED ) {
 			printMatrix( matrix );
