@@ -4,7 +4,7 @@ apply plugin: 'signing'
 
 
 group 'it.sephiroth.android.library.imagezoom'
-version '1.0.5'
+version '1.1.0-SNAPSHOT'
 
 
 dependencies {
@@ -13,25 +13,13 @@ dependencies {
 
 android {
     compileSdkVersion 19
-    buildToolsVersion "19.0.3"
+    buildToolsVersion "20.0.0"
 
     defaultConfig {
         versionCode 1
         versionName version
         minSdkVersion 9
         targetSdkVersion 19
-    }
-
-    sourceSets {
-        main {
-            manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src']
-            resources.srcDirs = ['src']
-            aidl.srcDirs = ['src']
-            renderscript.srcDirs = ['src']
-            res.srcDirs = ['res']
-            assets.srcDirs = ['assets']
-        }
     }
 }
 
@@ -41,7 +29,7 @@ def generatePom() {
             name 'ImageViewZoom'
             packaging 'aar'
             groupId project.group
-            artifactId project.name
+            artifactId 'imagezoom'
             version project.version
             description 'Android ImageView widget with zoom and pan capabilities'
             inceptionYear '2012'
