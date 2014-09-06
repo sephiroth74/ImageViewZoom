@@ -150,7 +150,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		mMaxFlingVelocity = configuration.getScaledMaximumFlingVelocity();
 
 		mDefaultAnimationDuration = getResources().getInteger(android.R.integer.config_shortAnimTime);
-		Log.d(LOG_TAG, "animation duration: " + mDefaultAnimationDuration);
 		setScaleType(ImageView.ScaleType.MATRIX);
 	}
 
@@ -962,12 +961,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	}
 
 	protected void scrollBy(float distanceX, float distanceY, final long durationMs) {
-		Log.i(LOG_TAG, "scrollBy: " + distanceX + "x" + distanceY + ", duration: " + durationMs);
-
-		final double dx = distanceX;
-		final double dy = distanceY;
-		final long startTime = System.currentTimeMillis();
-
 		final ValueAnimator anim1 = ValueAnimator.ofFloat(0, distanceX).setDuration(durationMs);
 		final ValueAnimator anim2 = ValueAnimator.ofFloat(0, distanceY).setDuration(durationMs);
 
@@ -991,8 +984,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 					float valueX = (Float) anim1.getAnimatedValue();
 					float valueY = (Float) anim2.getAnimatedValue();
 					panBy(valueX - oldValueX, valueY - oldValueY);
-
-					//Log.v(LOG_TAG, "panBy(1): " + (valueX-oldValueX) + ", " + (valueY - oldValueY));
 
 					oldValueX = valueX;
 					oldValueY = valueY;
@@ -1050,7 +1041,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 				@Override
 				public void onAnimationUpdate(final ValueAnimator animation) {
 					float value = (Float) animation.getAnimatedValue();
-					Log.i(LOG_TAG, "onAnimationUpdate: " + value);
 					zoomTo(value, destX, destY);
 				}
 			}

@@ -154,10 +154,6 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 		if (Math.abs(velocityX) > mMinFlingVelocity * 4 || Math.abs(velocityY) > mMinFlingVelocity * 4) {
 			mUserScaled = true;
-
-			Log.i(LOG_TAG, "onFling. velocityX: " + velocityX + ", velocityY: " + velocityY);
-			Log.v(LOG_TAG, "minFling: " + mMinFlingVelocity + ", maxFling: " + mMaxFlingVelocity);
-
 			float scale = Math.max(1, getScale());
 			final float x = ((velocityX * scale / mMaxFlingVelocity) * getWidth()) / scale;
 			final float y = ((velocityY * scale / mMaxFlingVelocity) * getHeight()) / scale;
