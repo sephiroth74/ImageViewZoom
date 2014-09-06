@@ -95,7 +95,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		if(getBitmapChanged()) return false;
+		if (getBitmapChanged()) return false;
 		mScaleDetector.onTouchEvent(event);
 
 		if (! mScaleDetector.isInProgress()) {
@@ -152,13 +152,19 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	}
 
 	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-		float diffX = e2.getX() - e1.getX();
-		float diffY = e2.getY() - e1.getY();
-
-		if (Math.abs(velocityX) > 800 || Math.abs(velocityY) > 800) {
+		if (Math.abs(velocityX) > mMinFlingVelocity * 4 || Math.abs(velocityY) > mMinFlingVelocity * 4) {
 			mUserScaled = true;
-			scrollBy(diffX / 2, diffY / 2, 300);
-			invalidate();
+
+			Log.i(LOG_TAG, "onFling. velocityX: " + velocityX + ", velocityY: " + velocityY);
+			Log.v(LOG_TAG, "minFling: " + mMinFlingVelocity + ", maxFling: " + mMaxFlingVelocity);
+
+			float scale = Math.max(1, getScale());
+			final float x = ((velocityX * scale / mMaxFlingVelocity) * getWidth()) / scale;
+			final float y = ((velocityY * scale / mMaxFlingVelocity) * getHeight()) / scale;
+
+			scrollBy(x, y, mDefaultAnimationDuration);
+
+			postInvalidate();
 			return true;
 		}
 		return false;
@@ -229,11 +235,10 @@ public class ImageViewTouch extends ImageViewTouchBase {
 			if (mDoubleTapEnabled) {
 				mUserScaled = true;
 				float scale = getScale();
-				float targetScale = scale;
+				float targetScale;
 				targetScale = onDoubleTapPost(scale, getMaxScale());
 				targetScale = Math.min(getMaxScale(), Math.max(targetScale, getMinScale()));
-				zoomTo(targetScale, e.getX(), e.getY(), DEFAULT_ANIMATION_DURATION);
-				invalidate();
+				zoomTo(targetScale, e.getX(), e.getY(), mDefaultAnimationDuration);
 			}
 
 			if (null != mDoubleTapListener) {

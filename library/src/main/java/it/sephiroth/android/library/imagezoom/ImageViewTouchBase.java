@@ -1,10 +1,5 @@
 package it.sephiroth.android.library.imagezoom;
 
-import it.sephiroth.android.library.easing.Cubic;
-import it.sephiroth.android.library.easing.Easing;
-import it.sephiroth.android.library.imagezoom.graphics.FastBitmapDrawable;
-import it.sephiroth.android.library.imagezoom.utils.IDisposable;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -15,7 +10,16 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.ViewConfiguration;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
+
+import com.nineoldandroids.animation.Animator;
+import com.nineoldandroids.animation.AnimatorSet;
+import com.nineoldandroids.animation.ValueAnimator;
+
+import it.sephiroth.android.library.imagezoom.graphics.FastBitmapDrawable;
+import it.sephiroth.android.library.imagezoom.utils.IDisposable;
 
 /**
  * Base View to manage image zoom/scrool/pinch operations
@@ -77,11 +81,11 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
 	public static final float ZOOM_INVALID = - 1f;
 
-	protected Easing mEasing = new Cubic();
+	protected final Handler mHandler = new Handler();
+
 	protected Matrix mBaseMatrix = new Matrix();
 	protected Matrix mSuppMatrix = new Matrix();
 	protected Matrix mNextMatrix;
-	protected Handler mHandler = new Handler();
 	protected Runnable mLayoutRunnable = null;
 	protected boolean mUserScaled = false;
 
@@ -103,7 +107,9 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	private boolean mScaleTypeChanged;
 	private boolean mBitmapChanged;
 
-	final protected int DEFAULT_ANIMATION_DURATION = 200;
+	protected int mDefaultAnimationDuration;
+	protected int mMinFlingVelocity;
+	protected int mMaxFlingVelocity;
 
 	protected RectF mBitmapRect = new RectF();
 	protected RectF mCenterRect = new RectF();
@@ -138,6 +144,13 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	}
 
 	protected void init(Context context, AttributeSet attrs, int defStyle) {
+
+		ViewConfiguration configuration = ViewConfiguration.get(context);
+		mMinFlingVelocity = configuration.getScaledMinimumFlingVelocity();
+		mMaxFlingVelocity = configuration.getScaledMaximumFlingVelocity();
+
+		mDefaultAnimationDuration = getResources().getInteger(android.R.integer.config_shortAnimTime);
+		Log.d(LOG_TAG, "animation duration: " + mDefaultAnimationDuration);
 		setScaleType(ImageView.ScaleType.MATRIX);
 	}
 
@@ -900,7 +913,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	 * @param scale      the target zoom
 	 * @param durationMs the animation duration
 	 */
-	public void zoomTo(float scale, float durationMs) {
+	public void zoomTo(float scale, long durationMs) {
 		PointF center = getCenter();
 		zoomTo(scale, center.x, center.y, durationMs);
 	}
@@ -948,38 +961,72 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		if (bitmapRect.right + scrollRect.left <= (mThisWidth - 0)) scrollRect.left = (int) ((mThisWidth - 0) - bitmapRect.right);
 	}
 
-	protected void scrollBy(float distanceX, float distanceY, final double durationMs) {
+	protected void scrollBy(float distanceX, float distanceY, final long durationMs) {
+		Log.i(LOG_TAG, "scrollBy: " + distanceX + "x" + distanceY + ", duration: " + durationMs);
+
 		final double dx = distanceX;
 		final double dy = distanceY;
 		final long startTime = System.currentTimeMillis();
-		mHandler.post(
-			new Runnable() {
 
-				double old_x = 0;
-				double old_y = 0;
+		final ValueAnimator anim1 = ValueAnimator.ofFloat(0, distanceX).setDuration(durationMs);
+		final ValueAnimator anim2 = ValueAnimator.ofFloat(0, distanceY).setDuration(durationMs);
+
+		AnimatorSet set = new AnimatorSet();
+		set.playTogether(
+			anim1, anim2
+		);
+
+		set.setDuration(durationMs);
+		set.setInterpolator(new DecelerateInterpolator());
+		set.start();
+
+		anim2.addUpdateListener(
+			new ValueAnimator.AnimatorUpdateListener() {
+
+				float oldValueX = 0;
+				float oldValueY = 0;
 
 				@Override
-				public void run() {
-					long now = System.currentTimeMillis();
-					double currentMs = Math.min(durationMs, now - startTime);
-					double x = mEasing.easeOut(currentMs, 0, dx, durationMs);
-					double y = mEasing.easeOut(currentMs, 0, dy, durationMs);
-					panBy((x - old_x), (y - old_y));
-					old_x = x;
-					old_y = y;
-					if (currentMs < durationMs) {
-						mHandler.post(this);
-					}
-					else {
-						RectF centerRect = getCenter(mSuppMatrix, true, true);
-						if (centerRect.left != 0 || centerRect.top != 0) scrollBy(centerRect.left, centerRect.top);
-					}
+				public void onAnimationUpdate(final ValueAnimator animation) {
+					float valueX = (Float) anim1.getAnimatedValue();
+					float valueY = (Float) anim2.getAnimatedValue();
+					panBy(valueX - oldValueX, valueY - oldValueY);
+
+					//Log.v(LOG_TAG, "panBy(1): " + (valueX-oldValueX) + ", " + (valueY - oldValueY));
+
+					oldValueX = valueX;
+					oldValueY = valueY;
+				}
+			}
+		);
+
+		set.addListener(
+			new Animator.AnimatorListener() {
+				@Override
+				public void onAnimationStart(final Animator animation) {
+
+				}
+
+				@Override
+				public void onAnimationEnd(final Animator animation) {
+					RectF centerRect = getCenter(mSuppMatrix, true, true);
+					if (centerRect.left != 0 || centerRect.top != 0) scrollBy(centerRect.left, centerRect.top);
+				}
+
+				@Override
+				public void onAnimationCancel(final Animator animation) {
+
+				}
+
+				@Override
+				public void onAnimationRepeat(final Animator animation) {
+
 				}
 			}
 		);
 	}
 
-	protected void zoomTo(float scale, float centerX, float centerY, final float durationMs) {
+	protected void zoomTo(float scale, float centerX, float centerY, final long durationMs) {
 		if (scale > getMaxScale()) scale = getMaxScale();
 
 		final long startTime = System.currentTimeMillis();
@@ -991,28 +1038,24 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		m.postScale(scale, scale, centerX, centerY);
 		RectF rect = getCenter(m, true, true);
 
+		final float finalScale = scale;
 		final float destX = centerX + rect.left * scale;
 		final float destY = centerY + rect.top * scale;
 
-		mHandler.post(
-			new Runnable() {
-
+		ValueAnimator animator = ValueAnimator.ofFloat(oldScale, finalScale);
+		animator.setDuration(durationMs);
+		animator.setInterpolator(new DecelerateInterpolator(1.0f));
+		animator.addUpdateListener(
+			new ValueAnimator.AnimatorUpdateListener() {
 				@Override
-				public void run() {
-					long now = System.currentTimeMillis();
-					float currentMs = Math.min(durationMs, now - startTime);
-					float newScale = (float) mEasing.easeInOut(currentMs, 0, deltaScale, durationMs);
-					zoomTo(oldScale + newScale, destX, destY);
-					if (currentMs < durationMs) {
-						mHandler.post(this);
-					}
-					else {
-						onZoomAnimationCompleted(getScale());
-						center(true, true);
-					}
+				public void onAnimationUpdate(final ValueAnimator animation) {
+					float value = (Float) animation.getAnimatedValue();
+					Log.i(LOG_TAG, "onAnimationUpdate: " + value);
+					zoomTo(value, destX, destY);
 				}
 			}
 		);
+		animator.start();
 	}
 
 	@Override
