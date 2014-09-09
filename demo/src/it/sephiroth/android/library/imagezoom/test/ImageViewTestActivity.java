@@ -145,7 +145,7 @@ public class ImageViewTestActivity extends Activity {
 				if (null != bitmap) {
 					Log.d(LOG_TAG, "screen size: " + metrics.widthPixels + "x" + metrics.heightPixels);
 					Log.d(LOG_TAG, "bitmap size: " + bitmap.getWidth() + "x" + bitmap.getHeight());
-					mImage.setImageBitmap(bitmap, null, - 1, 8f);
+					mImage.setImageBitmap(bitmap, null, -1, -1);
 
 					mImage.setOnDrawableChangedListener(
 						new OnDrawableChangeListener() {

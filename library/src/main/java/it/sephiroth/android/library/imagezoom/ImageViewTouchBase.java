@@ -2,12 +2,12 @@ package it.sephiroth.android.library.imagezoom;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.ViewConfiguration;
@@ -80,8 +80,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	protected static final boolean LOG_ENABLED = false;
 
 	public static final float ZOOM_INVALID = - 1f;
-
-	protected final Handler mHandler = new Handler();
+	public static final long DEFAULT_ANIMATION_DURATION = 200;
 
 	protected Matrix mBaseMatrix = new Matrix();
 	protected Matrix mSuppMatrix = new Matrix();
@@ -316,7 +315,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 						zoomTo(scale);
 					}
 					else {
-						if (Math.abs(old_scale - old_min_scale) > 0.001) {
+						if (Math.abs(old_scale - old_min_scale) > 0.1) {
 							scale = (old_matrix_scale / new_matrix_scale) * old_scale;
 						}
 						if (LOG_ENABLED) {
@@ -330,8 +329,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 						Log.d(LOG_TAG, "old scale: " + old_scale);
 						Log.d(LOG_TAG, "new scale: " + scale);
 					}
-
-
 				}
 
 				mUserScaled = false;
@@ -351,7 +348,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 				if (mBitmapChanged) mBitmapChanged = false;
 
 				if (LOG_ENABLED) {
-					Log.d(LOG_TAG, "new scale: " + getScale());
+					Log.d(LOG_TAG, "scale: " + getScale() + ", minScale: " + getMinScale() + ", maxScale: " + getMaxScale());
 				}
 			}
 		}
@@ -362,7 +359,23 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
 			if (mBitmapChanged) mBitmapChanged = false;
 			if (mScaleTypeChanged) mScaleTypeChanged = false;
+		}
+	}
 
+	@Override
+	protected void onConfigurationChanged(final Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+
+		if(LOG_ENABLED){
+			Log.i(LOG_TAG, "onConfigurationChanged. scale: " + getScale() + ", minScale: " + getMinScale());
+		}
+
+		if(mUserScaled) {
+			mUserScaled = Math.abs(getScale() - getMinScale()) > 0.1f;
+		}
+
+		if(LOG_ENABLED){
+			Log.v(LOG_TAG, "mUserScaled: " + mUserScaled);
 		}
 	}
 
@@ -821,10 +834,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		RectF rect = getCenter(mSuppMatrix, horizontal, vertical);
 
 		if (rect.left != 0 || rect.top != 0) {
-
-			if (LOG_ENABLED) {
-				Log.i(LOG_TAG, "center");
-			}
 			postTranslate(rect.left, rect.top);
 		}
 	}
@@ -869,18 +878,12 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
 	protected void postTranslate(float deltaX, float deltaY) {
 		if (deltaX != 0 || deltaY != 0) {
-			if (LOG_ENABLED) {
-				Log.i(LOG_TAG, "postTranslate: " + deltaX + "x" + deltaY);
-			}
 			mSuppMatrix.postTranslate(deltaX, deltaY);
 			setImageMatrix(getImageViewMatrix());
 		}
 	}
 
 	protected void postScale(float scale, float centerX, float centerY) {
-		if (LOG_ENABLED) {
-			Log.i(LOG_TAG, "postScale: " + scale + ", center: " + centerX + "x" + centerY);
-		}
 		mSuppMatrix.postScale(scale, scale, centerX, centerY);
 		setImageMatrix(getImageViewMatrix());
 	}
@@ -960,18 +963,29 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		if (bitmapRect.right + scrollRect.left <= (mThisWidth - 0)) scrollRect.left = (int) ((mThisWidth - 0) - bitmapRect.right);
 	}
 
+	Animator mCurrentAnimation;
+
+	protected void stopAllAnimations(){
+		if(null != mCurrentAnimation){
+			mCurrentAnimation.cancel();
+			mCurrentAnimation = null;
+		}
+	}
+
 	protected void scrollBy(float distanceX, float distanceY, final long durationMs) {
 		final ValueAnimator anim1 = ValueAnimator.ofFloat(0, distanceX).setDuration(durationMs);
 		final ValueAnimator anim2 = ValueAnimator.ofFloat(0, distanceY).setDuration(durationMs);
 
-		AnimatorSet set = new AnimatorSet();
-		set.playTogether(
+		stopAllAnimations();
+
+		mCurrentAnimation = new AnimatorSet();
+		((AnimatorSet)mCurrentAnimation).playTogether(
 			anim1, anim2
 		);
 
-		set.setDuration(durationMs);
-		set.setInterpolator(new DecelerateInterpolator());
-		set.start();
+		mCurrentAnimation.setDuration(durationMs);
+		mCurrentAnimation.setInterpolator(new DecelerateInterpolator());
+		mCurrentAnimation.start();
 
 		anim2.addUpdateListener(
 			new ValueAnimator.AnimatorUpdateListener() {
@@ -991,7 +1005,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 			}
 		);
 
-		set.addListener(
+		mCurrentAnimation.addListener(
 			new Animator.AnimatorListener() {
 				@Override
 				public void onAnimationStart(final Animator animation) {
@@ -1020,10 +1034,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	protected void zoomTo(float scale, float centerX, float centerY, final long durationMs) {
 		if (scale > getMaxScale()) scale = getMaxScale();
 
-		final long startTime = System.currentTimeMillis();
 		final float oldScale = getScale();
-
-		final float deltaScale = scale - oldScale;
 
 		Matrix m = new Matrix(mSuppMatrix);
 		m.postScale(scale, scale, centerX, centerY);
@@ -1033,10 +1044,12 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		final float destX = centerX + rect.left * scale;
 		final float destY = centerY + rect.top * scale;
 
-		ValueAnimator animator = ValueAnimator.ofFloat(oldScale, finalScale);
-		animator.setDuration(durationMs);
-		animator.setInterpolator(new DecelerateInterpolator(1.0f));
-		animator.addUpdateListener(
+		stopAllAnimations();
+
+		ValueAnimator animation = ValueAnimator.ofFloat(oldScale, finalScale);
+		animation.setDuration(durationMs);
+		animation.setInterpolator(new DecelerateInterpolator(1.0f));
+		animation.addUpdateListener(
 			new ValueAnimator.AnimatorUpdateListener() {
 				@Override
 				public void onAnimationUpdate(final ValueAnimator animation) {
@@ -1045,7 +1058,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 				}
 			}
 		);
-		animator.start();
+		animation.start();
 	}
 
 	@Override

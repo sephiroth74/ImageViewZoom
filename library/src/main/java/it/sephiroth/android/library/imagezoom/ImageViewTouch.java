@@ -123,7 +123,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		}
 	}
 
-	protected float onDoubleTapPost(float scale, float maxZoom) {
+	protected float onDoubleTapPost(float scale, final float maxZoom, final float minScale) {
 		if (mDoubleTapDirection == 1) {
 			if ((scale + (mScaleFactor * 2)) <= maxZoom) {
 				return scale + mScaleFactor;
@@ -135,7 +135,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 		}
 		else {
 			mDoubleTapDirection = 1;
-			return 1f;
+			return minScale;
 		}
 	}
 
@@ -152,13 +152,31 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	}
 
 	public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-		if (Math.abs(velocityX) > mMinFlingVelocity * 4 || Math.abs(velocityY) > mMinFlingVelocity * 4) {
-			mUserScaled = true;
-			float scale = Math.max(1, getScale());
-			final float x = ((velocityX * scale / mMaxFlingVelocity) * getWidth()) / scale;
-			final float y = ((velocityY * scale / mMaxFlingVelocity) * getHeight()) / scale;
+		if (Math.abs(velocityX) > (mMinFlingVelocity * 4) || Math.abs(velocityY) > (mMinFlingVelocity * 4)) {
 
-			scrollBy(x, y, mDefaultAnimationDuration);
+			if (LOG_ENABLED) {
+				Log.i(LOG_TAG, "onFling");
+				Log.v(LOG_TAG, "velocity: " + velocityY);
+				Log.v(LOG_TAG, "diff: " + (e2.getY() - e1.getY()));
+			}
+
+			final float scale = Math.min(Math.max(2f, getScale() / 2), 3.f);
+
+			float scaledDistanceX = ((velocityX) / mMaxFlingVelocity) * (getWidth() * scale);
+			float scaledDistanceY = ((velocityY) / mMaxFlingVelocity) * (getHeight() * scale);
+
+
+			if (LOG_ENABLED) {
+				Log.v(LOG_TAG, "scale: " + getScale() + ", scale_final: " + scale);
+				Log.v(LOG_TAG, "scaledDistanceX: " + scaledDistanceX);
+				Log.v(LOG_TAG, "scaledDistanceY: " + scaledDistanceY);
+			}
+
+			mUserScaled = true;
+
+			double total = Math.sqrt(Math.pow(scaledDistanceX, 2) + Math.pow(scaledDistanceY, 2));
+
+			scrollBy(scaledDistanceX, scaledDistanceY, (long) Math.min(Math.max(300, total / 5), 800));
 
 			postInvalidate();
 			return true;
@@ -232,7 +250,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 				mUserScaled = true;
 				float scale = getScale();
 				float targetScale;
-				targetScale = onDoubleTapPost(scale, getMaxScale());
+				targetScale = onDoubleTapPost(scale, getMaxScale(), getMinScale());
 				targetScale = Math.min(getMaxScale(), Math.max(targetScale, getMinScale()));
 				zoomTo(targetScale, e.getX(), e.getY(), mDefaultAnimationDuration);
 			}
@@ -282,6 +300,12 @@ public class ImageViewTouch extends ImageViewTouchBase {
 
 		@Override
 		public boolean onDown(MotionEvent e) {
+			if (LOG_ENABLED) {
+				Log.i(LOG_TAG, "onDown");
+			}
+			stopAllAnimations();
+
+
 			return ImageViewTouch.this.onDown(e);
 		}
 	}
