@@ -12,6 +12,7 @@ import android.app.Activity;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -25,6 +26,9 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Toast;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class ImageViewTestActivity extends Activity {
 
@@ -134,18 +138,25 @@ public class ImageViewTestActivity extends Activity {
 				Log.d("image", imageUri.toString());
 
 				final DisplayMetrics metrics = getResources().getDisplayMetrics();
-				int size = (int) (Math.min(metrics.widthPixels, metrics.heightPixels) / 0.75);
+				int size = (int) (Math.min(metrics.widthPixels, metrics.heightPixels) / 0.45);
 
 				if (small) {
 					size /= 3;
 				}
 
 				Bitmap bitmap = DecodeUtils.decode(this, imageUri, size, size);
+				Bitmap overlay = getOverlayBitmap();
 
 				if (null != bitmap) {
 					Log.d(LOG_TAG, "screen size: " + metrics.widthPixels + "x" + metrics.heightPixels);
 					Log.d(LOG_TAG, "bitmap size: " + bitmap.getWidth() + "x" + bitmap.getHeight());
-					mImage.setImageBitmap(bitmap, null, -1, -1);
+
+					if (mImage instanceof ImageViewOverlay) {
+						((ImageViewOverlay) mImage).setImageBitmap(bitmap, overlay);
+					}
+					else {
+						mImage.setImageBitmap(bitmap, null, - 1, - 1);
+					}
 
 					mImage.setOnDrawableChangedListener(
 						new OnDrawableChangeListener() {
@@ -166,5 +177,19 @@ public class ImageViewTestActivity extends Activity {
 			c.close();
 			return;
 		}
+	}
+
+	private Bitmap getOverlayBitmap() {
+		try {
+			InputStream stream = getAssets().open("circle-black-medium.png");
+			try {
+				return BitmapFactory.decodeStream(stream);
+			} finally {
+				stream.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }
