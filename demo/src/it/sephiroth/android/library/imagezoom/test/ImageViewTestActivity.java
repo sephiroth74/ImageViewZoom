@@ -138,7 +138,7 @@ public class ImageViewTestActivity extends Activity {
 				Log.d("image", imageUri.toString());
 
 				final DisplayMetrics metrics = getResources().getDisplayMetrics();
-				int size = (int) (Math.min(metrics.widthPixels, metrics.heightPixels) / 0.45);
+				int size = (int) (Math.min(metrics.widthPixels, metrics.heightPixels) / 0.55);
 
 				if (small) {
 					size /= 3;

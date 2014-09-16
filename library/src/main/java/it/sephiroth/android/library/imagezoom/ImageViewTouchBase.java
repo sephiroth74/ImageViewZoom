@@ -96,7 +96,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	protected final Matrix mDisplayMatrix = new Matrix();
 	protected final float[] mMatrixValues = new float[9];
 
-	protected PointF mCenter = new PointF();
 
 	protected DisplayType mScaleType = DisplayType.FIT_IF_BIGGER;
 	protected boolean mScaleTypeChanged;
@@ -106,11 +105,15 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	protected int mMinFlingVelocity;
 	protected int mMaxFlingVelocity;
 
+	protected PointF mCenter = new PointF();
 	protected RectF mBitmapRect = new RectF();
+	protected RectF mBitmapRectTmp = new RectF();
 	protected RectF mCenterRect = new RectF();
-	protected RectF mScrollRect = new RectF();
-	protected RectF mViewPort;
-	protected RectF mViewPortOld;
+	protected PointF mScrollPoint = new PointF();
+	protected RectF mViewPort = new RectF();
+	protected RectF mViewPortOld = new RectF();
+
+	private Animator mCurrentAnimation;
 
 	private OnDrawableChangeListener mDrawableChangeListener;
 	private OnLayoutChangeListener mOnLayoutChangeListener;
@@ -141,15 +144,10 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	}
 
 	protected void init(Context context, AttributeSet attrs, int defStyle) {
-
 		ViewConfiguration configuration = ViewConfiguration.get(context);
 		mMinFlingVelocity = configuration.getScaledMinimumFlingVelocity();
 		mMaxFlingVelocity = configuration.getScaledMaximumFlingVelocity();
-
 		mDefaultAnimationDuration = getResources().getInteger(android.R.integer.config_shortAnimTime);
-		mViewPort = new RectF();
-		mViewPortOld = new RectF();
-
 		setScaleType(ImageView.ScaleType.MATRIX);
 	}
 
@@ -220,7 +218,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		float deltaX = 0;
 		float deltaY = 0;
 
-		if(changed) {
+		if (changed) {
 			mViewPortOld.set(mViewPort);
 			onViewPortChanged(left, top, right, bottom);
 
@@ -365,15 +363,15 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	protected void onConfigurationChanged(final Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 
-		if(DEBUG){
+		if (DEBUG) {
 			Log.i(TAG, "onConfigurationChanged. scale: " + getScale() + ", minScale: " + getMinScale() + ", mUserScaled: " + mUserScaled);
 		}
 
-		if(mUserScaled) {
+		if (mUserScaled) {
 			mUserScaled = Math.abs(getScale() - getMinScale()) > 0.1f;
 		}
 
-		if(DEBUG){
+		if (DEBUG) {
 			Log.v(TAG, "mUserScaled: " + mUserScaled);
 		}
 	}
@@ -479,22 +477,8 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	}
 
 	protected void _setImageDrawable(final Drawable drawable, final Matrix initial_matrix, float min_zoom, float max_zoom) {
-
-		if (DEBUG) {
-			Log.i(TAG, "_setImageDrawable");
-		}
-
 		mBaseMatrix.reset();
-
-		if (drawable != null) {
-			if (DEBUG) {
-				Log.d(TAG, "size: " + drawable.getIntrinsicWidth() + "x" + drawable.getIntrinsicHeight());
-			}
-			super.setImageDrawable(drawable);
-		}
-		else {
-			super.setImageDrawable(null);
-		}
+		super.setImageDrawable(drawable);
 
 		if (min_zoom != ZOOM_INVALID && max_zoom != ZOOM_INVALID) {
 			min_zoom = Math.min(min_zoom, max_zoom);
@@ -527,16 +511,21 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 			mMaxZoomDefined = false;
 		}
 
-		if (initial_matrix != null) {
-			mNextMatrix = new Matrix(initial_matrix);
-		}
-
-		if (DEBUG) {
-			Log.v(TAG, "mMinZoom: " + mMinZoom + ", mMaxZoom: " + mMaxZoom);
-		}
+		if (initial_matrix != null) mNextMatrix = new Matrix(initial_matrix);
+		if (DEBUG) Log.v(TAG, "mMinZoom: " + mMinZoom + ", mMaxZoom: " + mMaxZoom);
 
 		mBitmapChanged = true;
+		updateDrawable(drawable);
 		requestLayout();
+	}
+
+	protected void updateDrawable(Drawable newDrawable) {
+		if (null != newDrawable) {
+			mBitmapRect.set(0, 0, newDrawable.getIntrinsicWidth(), newDrawable.getIntrinsicHeight());
+		}
+		else {
+			mBitmapRect.setEmpty();
+		}
 	}
 
 	/**
@@ -584,9 +573,8 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	protected float computeMaxZoom() {
 		final Drawable drawable = getDrawable();
 		if (drawable == null) return 1f;
-
-		float fw = (float) drawable.getIntrinsicWidth() / mViewPort.width();
-		float fh = (float) drawable.getIntrinsicHeight() / mViewPort.height();
+		float fw = mBitmapRect.width() / mViewPort.width();
+		float fh = mBitmapRect.height() / mViewPort.height();
 		float scale = Math.max(fw, fh) * 4;
 
 		if (DEBUG) {
@@ -663,7 +651,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
 	@Override
 	public void setImageMatrix(Matrix matrix) {
-
 		Matrix current = getImageMatrix();
 		boolean needUpdate = false;
 
@@ -672,7 +659,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		}
 
 		super.setImageMatrix(matrix);
-
 		if (needUpdate) onImageMatrixChanged();
 	}
 
@@ -701,8 +687,8 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	}
 
 	protected void getProperBaseMatrix(Drawable drawable, Matrix matrix, RectF rect) {
-		float w = drawable.getIntrinsicWidth();
-		float h = drawable.getIntrinsicHeight();
+		float w = mBitmapRect.width();
+		float h = mBitmapRect.height();
 		float widthScale, heightScale;
 
 		matrix.reset();
@@ -737,13 +723,9 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	}
 
 	protected RectF getBitmapRect(Matrix supportMatrix) {
-		final Drawable drawable = getDrawable();
-
-		if (drawable == null) return null;
 		Matrix m = getImageViewMatrix(supportMatrix);
-		mBitmapRect.set(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
-		m.mapRect(mBitmapRect);
-		return mBitmapRect;
+		m.mapRect(mBitmapRectTmp, mBitmapRect);
+		return mBitmapRectTmp;
 	}
 
 	protected float getScale(Matrix matrix) {
@@ -805,7 +787,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 				deltaX = (mViewPort.width() - width) / 2 - (rect.left - mViewPort.left);
 			}
 			else if (rect.left > mViewPort.left) {
-				deltaX = -(rect.left - mViewPort.left);
+				deltaX = - (rect.left - mViewPort.left);
 			}
 			else if (rect.right < mViewPort.right) {
 				deltaX = mViewPort.right - rect.right;
@@ -869,8 +851,10 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		center(true, true);
 	}
 
+	@SuppressWarnings ("unused")
 	protected void onZoom(float scale) {}
 
+	@SuppressWarnings ("unused")
 	protected void onZoomAnimationCompleted(float scale) {}
 
 	/**
@@ -885,32 +869,28 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
 	protected void panBy(double dx, double dy) {
 		RectF rect = getBitmapRect();
-		mScrollRect.set((float) dx, (float) dy, 0, 0);
-		updateRect(rect, mScrollRect);
+		mScrollPoint.set((float) dx, (float) dy);
+		updateRect(rect, mScrollPoint);
 
-		//Log.v(TAG, "panBy: " + mScrollRect);
-
-		if(mScrollRect.left != 0 || mScrollRect.top != 0) {
-			postTranslate(mScrollRect.left, mScrollRect.top);
+		if (mScrollPoint.x != 0 || mScrollPoint.y != 0) {
+			postTranslate(mScrollPoint.x, mScrollPoint.y);
 			center(true, true);
 		}
 	}
 
-	protected void updateRect(RectF bitmapRect, RectF scrollRect) {
+	protected void updateRect(RectF bitmapRect, PointF scrollRect) {
 		if (bitmapRect == null) return;
-
-//		if (bitmapRect.top >= 0 && bitmapRect.bottom <= mThisHeight) scrollRect.top = 0;
-//		if (bitmapRect.left >= 0 && bitmapRect.right <= mThisWidth) scrollRect.left = 0;
-//		if (bitmapRect.top + scrollRect.top >= 0 && bitmapRect.bottom > mThisHeight) scrollRect.top = (int) (0 - bitmapRect.top);
-//		if (bitmapRect.bottom + scrollRect.top <= (mThisHeight - 0) && bitmapRect.top < 0) scrollRect.top = (int) ((mThisHeight - 0) - bitmapRect.bottom);
-//		if (bitmapRect.left + scrollRect.left >= 0) scrollRect.left = (int) (0 - bitmapRect.left);
-//		if (bitmapRect.right + scrollRect.left <= (mThisWidth - 0)) scrollRect.left = (int) ((mThisWidth - 0) - bitmapRect.right);
+		//		if (bitmapRect.top >= 0 && bitmapRect.bottom <= mThisHeight) scrollRect.top = 0;
+		//		if (bitmapRect.left >= 0 && bitmapRect.right <= mThisWidth) scrollRect.left = 0;
+		//		if (bitmapRect.top + scrollRect.top >= 0 && bitmapRect.bottom > mThisHeight) scrollRect.top = (int) (0 - bitmapRect.top);
+		//		if (bitmapRect.bottom + scrollRect.top <= (mThisHeight - 0) && bitmapRect.top < 0) scrollRect.top = (int) ((mThisHeight - 0) - bitmapRect
+		// .bottom);
+		//		if (bitmapRect.left + scrollRect.left >= 0) scrollRect.left = (int) (0 - bitmapRect.left);
+		//		if (bitmapRect.right + scrollRect.left <= (mThisWidth - 0)) scrollRect.left = (int) ((mThisWidth - 0) - bitmapRect.right);
 	}
 
-	Animator mCurrentAnimation;
-
-	protected void stopAllAnimations(){
-		if(null != mCurrentAnimation){
+	protected void stopAllAnimations() {
+		if (null != mCurrentAnimation) {
 			mCurrentAnimation.cancel();
 			mCurrentAnimation = null;
 		}
@@ -923,7 +903,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		stopAllAnimations();
 
 		mCurrentAnimation = new AnimatorSet();
-		((AnimatorSet)mCurrentAnimation).playTogether(
+		((AnimatorSet) mCurrentAnimation).playTogether(
 			anim1, anim2
 		);
 

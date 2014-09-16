@@ -248,9 +248,10 @@ public class ImageViewTouch extends ImageViewTouchBase {
 	 *                  negative value means scroll from left to right
 	 * @return true if there is some more place to scroll, false - otherwise.
 	 */
+	@SuppressWarnings("unused")
 	public boolean canScroll(int direction) {
 		RectF bitmapRect = getBitmapRect();
-		updateRect(bitmapRect, mScrollRect);
+		updateRect(bitmapRect, mScrollPoint);
 		Rect imageViewRect = new Rect();
 		getGlobalVisibleRect(imageViewRect);
 
@@ -264,7 +265,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
 			}
 		}
 
-		double bitmapScrollRectDelta = Math.abs(bitmapRect.left - mScrollRect.left);
+		double bitmapScrollRectDelta = Math.abs(bitmapRect.left - mScrollPoint.x);
 		return bitmapScrollRectDelta > SCROLL_DELTA_THRESHOLD;
 	}
 
