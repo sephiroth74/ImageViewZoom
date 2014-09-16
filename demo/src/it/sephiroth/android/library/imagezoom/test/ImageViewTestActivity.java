@@ -66,6 +66,15 @@ public class ImageViewTestActivity extends Activity {
 
 				@Override
 				public void onClick(View v) {
+
+					if (mImage instanceof ImageViewOverlay) {
+						ImageViewOverlay image = (ImageViewOverlay) mImage;
+						if (null != image.getOverlayDrawable()) {
+							Bitmap overlay = getOverlayBitmap();
+							image.updateImageOverlay(overlay);
+							return;
+						}
+					}
 					selectRandomImage(mCheckBox.isChecked());
 				}
 			}
@@ -180,8 +189,20 @@ public class ImageViewTestActivity extends Activity {
 	}
 
 	private Bitmap getOverlayBitmap() {
+		String file = null;
 		try {
-			InputStream stream = getAssets().open("circle-black-medium.png");
+			String[] files = getAssets().list("images");
+
+			if (null != files && files.length > 0) {
+				int position = (int) (Math.random() * files.length);
+				file = files[position];
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		try {
+			InputStream stream = getAssets().open("images/" + file);
 			try {
 				return BitmapFactory.decodeStream(stream);
 			} finally {

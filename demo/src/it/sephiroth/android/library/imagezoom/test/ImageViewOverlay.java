@@ -16,14 +16,14 @@ public class ImageViewOverlay extends ImageViewTouch {
 	protected Drawable mOverlayDrawable;
 	protected Drawable mOverlayTempDrawable;
 
+	protected Matrix mDrawMatrix2;
 	protected Matrix mBaseMatrix2 = new Matrix();
 	protected Matrix mSuppMatrix2 = new Matrix();
 	protected Matrix mDisplayMatrix2 = new Matrix();
-	protected Matrix mDrawMatrix2;
-	protected Matrix mMatrix2;
-	protected RectF mOverlayBitmapRect;
+	protected Matrix mMatrix2 = new Matrix();
+	protected RectF mOverlayBitmapRect = new RectF();
+	private RectF mTempViewPort = new RectF();
 	private int mOverlayDrawableWidth, mOverlayDrawableHeight;
-	private RectF mTempViewPort;
 
 	private static final int MAX_VIEWPORT_SIZE = 2048;
 
@@ -37,9 +37,6 @@ public class ImageViewOverlay extends ImageViewTouch {
 
 	@Override
 	protected void init(final Context context, final AttributeSet attrs, final int defStyle) {
-		mMatrix2 = new Matrix();
-		mOverlayBitmapRect = new RectF();
-		mTempViewPort = new RectF();
 		super.init(context, attrs, defStyle);
 	}
 
@@ -88,6 +85,11 @@ public class ImageViewOverlay extends ImageViewTouch {
 
 	@Override
 	protected void getProperBaseMatrix(Drawable drawable, Matrix matrix, RectF rect) {
+		if (null == mOverlayDrawable) {
+			super.getProperBaseMatrix(drawable, matrix, rect);
+			return;
+		}
+
 		float w = drawable.getIntrinsicWidth();
 		float h = drawable.getIntrinsicHeight();
 		float widthScale, heightScale;
@@ -154,11 +156,12 @@ public class ImageViewOverlay extends ImageViewTouch {
 
 	@Override
 	protected float computeMinZoom() {
+		if (null == mOverlayDrawable) return super.computeMinZoom();
 		return 1;
 	}
 
 	public void setImageBitmap(final Bitmap bitmap, final Bitmap overlay) {
-		if (null != bitmap) {
+		if (null != overlay) {
 			mOverlayTempDrawable = new FastBitmapDrawable(overlay);
 		}
 		else {
@@ -167,9 +170,45 @@ public class ImageViewOverlay extends ImageViewTouch {
 		super.setImageBitmap(bitmap, null, - 1, - 1);
 	}
 
+	public void setImageDrawable(final Drawable drawable, final Bitmap overlay) {
+		if (null != overlay) {
+			mOverlayTempDrawable = new FastBitmapDrawable(overlay);
+		}
+		else {
+			mOverlayTempDrawable = null;
+		}
+		super.setImageDrawable(drawable, null, - 1, - 1);
+	}
+
+	public void updateImageOverlay(final Bitmap overlay) {
+		if (mOverlayDrawable == null || null == overlay) return;
+
+		if (mOverlayDrawable.getIntrinsicWidth() == overlay.getWidth() && mOverlayDrawable.getIntrinsicHeight() == overlay.getHeight()) {
+			mOverlayDrawable = new FastBitmapDrawable(overlay);
+			invalidate();
+		}
+		else {
+			setImageDrawable(getDrawable(), overlay);
+		}
+	}
+
+	@Override
+	public void requestLayout() {
+		super.requestLayout();
+	}
+
+	public Drawable getOverlayDrawable() {
+		return mOverlayDrawable;
+	}
+
 	@Override
 	protected void onViewPortChanged(final float left, final float top, final float right, final float bottom) {
-		super.onViewPortChanged(mTempViewPort.left, mTempViewPort.top, mTempViewPort.right, mTempViewPort.bottom);
+		if (null == mOverlayDrawable) {
+			super.onViewPortChanged(left, top, right, bottom);
+		}
+		else {
+			super.onViewPortChanged(mTempViewPort.left, mTempViewPort.top, mTempViewPort.right, mTempViewPort.bottom);
+		}
 	}
 
 	@Override
@@ -187,7 +226,7 @@ public class ImageViewOverlay extends ImageViewTouch {
 
 		if (changed || mBitmapChanged) {
 			Drawable drawable = getDrawable();
-			if (null != drawable) {
+			if (null != drawable && null != mOverlayDrawable) {
 				int dwidth = Math.min(right - left, Math.min(drawable.getIntrinsicWidth(), MAX_VIEWPORT_SIZE));
 				int dheight = Math.min(bottom - top, Math.min(drawable.getIntrinsicHeight(), MAX_VIEWPORT_SIZE));
 
@@ -251,15 +290,5 @@ public class ImageViewOverlay extends ImageViewTouch {
 			mOverlayDrawable.draw(canvas);
 			canvas.restoreToCount(saveCount);
 		}
-
-
-		//		if (null != mTempViewPort) {
-		//			Paint paint = new Paint();
-		//			paint.setColor(Color.RED);
-		//			paint.setStyle(Paint.Style.STROKE);
-		//			canvas.drawRect(mTempViewPort, paint);
-		//
-		//			canvas.drawRect(getLeft() + 1, getTop() + 1, getRight(), getBottom(), paint);
-		//		}
 	}
 }
