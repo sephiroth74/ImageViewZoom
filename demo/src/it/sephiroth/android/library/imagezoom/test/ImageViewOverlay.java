@@ -1,15 +1,28 @@
 package it.sephiroth.android.library.imagezoom.test;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.PointF;
+import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.util.AttributeSet;
+import android.util.Log;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 import it.sephiroth.android.library.imagezoom.graphics.FastBitmapDrawable;
+import it.sephiroth.android.library.imagezoom.test.utils.DecodeUtils;
 
 public class ImageViewOverlay extends ImageViewTouch {
 
@@ -26,6 +39,7 @@ public class ImageViewOverlay extends ImageViewTouch {
 	private int mOverlayDrawableWidth, mOverlayDrawableHeight;
 
 	private static final int MAX_VIEWPORT_SIZE = 2048;
+	private boolean mOverlayChanged;
 
 	public ImageViewOverlay(final Context context, final AttributeSet attrs) {
 		super(context, attrs);
@@ -167,6 +181,7 @@ public class ImageViewOverlay extends ImageViewTouch {
 		else {
 			mOverlayTempDrawable = null;
 		}
+		mOverlayChanged = true;
 		super.setImageBitmap(bitmap, null, - 1, - 1);
 	}
 
@@ -177,6 +192,7 @@ public class ImageViewOverlay extends ImageViewTouch {
 		else {
 			mOverlayTempDrawable = null;
 		}
+		mOverlayChanged = true;
 		super.setImageDrawable(drawable, null, - 1, - 1);
 	}
 
@@ -192,11 +208,7 @@ public class ImageViewOverlay extends ImageViewTouch {
 		}
 	}
 
-	@Override
-	public void requestLayout() {
-		super.requestLayout();
-	}
-
+	@SuppressWarnings ("unused")
 	public Drawable getOverlayDrawable() {
 		return mOverlayDrawable;
 	}
@@ -213,20 +225,30 @@ public class ImageViewOverlay extends ImageViewTouch {
 
 	@Override
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+		Log.i(TAG, "onLayout(" + left + ", " + top + ", " + right + ", " + bottom + ")");
+
 		mTempViewPort.set(left, top, right, bottom);
 
-		if (null != mOverlayTempDrawable) {
+		if (mOverlayChanged) {
 			mOverlayDrawable = mOverlayTempDrawable;
 			mOverlayTempDrawable = null;
-			mOverlayDrawableWidth = mOverlayDrawable.getIntrinsicWidth();
-			mOverlayDrawableHeight = mOverlayDrawable.getIntrinsicHeight();
-		}
 
-		final Drawable overlay = mOverlayDrawable;
+			if (null != mOverlayDrawable) {
+				mOverlayDrawableWidth = mOverlayDrawable.getIntrinsicWidth();
+				mOverlayDrawableHeight = mOverlayDrawable.getIntrinsicHeight();
+			}
+			else {
+				mOverlayDrawableWidth = 0;
+				mOverlayDrawableHeight = 0;
+			}
+		}
 
 		if (changed || mBitmapChanged) {
 			Drawable drawable = getDrawable();
 			if (null != drawable && null != mOverlayDrawable) {
+
+				Log.v(TAG, "bitmap size: " + drawable.getIntrinsicWidth() + "x" + drawable.getIntrinsicHeight());
+
 				int dwidth = Math.min(right - left, Math.min(drawable.getIntrinsicWidth(), MAX_VIEWPORT_SIZE));
 				int dheight = Math.min(bottom - top, Math.min(drawable.getIntrinsicHeight(), MAX_VIEWPORT_SIZE));
 
@@ -244,12 +266,12 @@ public class ImageViewOverlay extends ImageViewTouch {
 			changed = true;
 		}
 
-		if (null != overlay) {
+		if (null != mOverlayDrawable) {
 			if (changed || mBitmapChanged) {
 				mBaseMatrix2.reset();
 				mSuppMatrix2.reset();
 
-				getProperBaseMatrix2(overlay, mBaseMatrix2, mTempViewPort);
+				getProperBaseMatrix2(mOverlayDrawable, mBaseMatrix2, mTempViewPort);
 				setImageMatrix2(getImageViewMatrix2());
 
 				mTempViewPort.set(getOverlayBitmapRect());
@@ -258,7 +280,6 @@ public class ImageViewOverlay extends ImageViewTouch {
 
 		super.onLayout(changed, left, top, right, bottom);
 	}
-
 
 	@Override
 	protected void onDraw(final Canvas canvas) {
@@ -290,5 +311,127 @@ public class ImageViewOverlay extends ImageViewTouch {
 			mOverlayDrawable.draw(canvas);
 			canvas.restoreToCount(saveCount);
 		}
+	}
+
+	@SuppressLint ("WrongCall")
+	public Bitmap generateResultBitmap() {
+		if (null == mOverlayDrawable) return null;
+
+		Drawable drawable = getDrawable();
+		if (null == drawable) return null;
+
+		RectF rect = getOverlayBitmapRect();
+
+		PointF previewSize = new PointF(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+		RectF bitmapRect = new RectF(getBitmapRect());
+		RectF overlayRect = new RectF(getOverlayBitmapRect());
+		PointF overlaySize = new PointF(mOverlayDrawableWidth, mOverlayDrawableHeight);
+
+		Log.i(TAG, "-----------------------");
+		Log.i(TAG, "generateResultBitmap");
+		Log.i(TAG, "-----------------------");
+
+		Log.v(TAG, "overlay rect: " + getOverlayBitmapRect() + ", size: " + getOverlayBitmapRect().width() + "x" + getOverlayBitmapRect().height());
+		Log.v(TAG, "bitmap rect: " + getBitmapRect() + ", size: " + getBitmapRect().width() + "x" + getBitmapRect().height());
+		Log.v(TAG, "overlay real size: " + mOverlayDrawableWidth + "x" + mOverlayDrawableHeight);
+		Log.v(TAG, "bitmap real size: " + drawable.getIntrinsicWidth() + "x" + drawable.getIntrinsicHeight());
+		Log.v(TAG, "current scale: " + getScale());
+
+		printMatrix(getImageMatrix());
+		printMatrix(getImageViewMatrix());
+
+		//Bitmap bitmap = ((FastBitmapDrawable) drawable).getBitmap();
+		Bitmap overlay = null;
+		InputStream stream = null;
+		Bitmap bitmap = DecodeUtils.decode(getContext(), Uri.parse("content://media/external/images/media/5063"), 5000, 5000);
+
+		try {
+			stream = getContext().getAssets().open("images/circle-black-large.png");
+			overlay = BitmapFactory.decodeStream(stream);
+			stream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+
+		int width = bitmap.getWidth();
+		int height = bitmap.getHeight();
+		double overlaySizeRatio = overlayRect.width() / overlayRect.height();
+
+		float bitmapScaleX = (float)bitmap.getWidth()/previewSize.x;
+		float bitmapScaleY = (float)bitmap.getHeight()/previewSize.y;
+
+		Log.d(TAG, String.format("bitmapScale: %fx%f", bitmapScaleX, bitmapScaleY));
+
+		float scaleX = bitmapRect.width() / previewSize.x;
+		float scaleY = bitmapRect.height() / previewSize.y;
+
+		Log.d(TAG, "bitmap size: " + width + "x" + height);
+		Log.d(TAG, "scaleX: " + scaleX + ", scaleY: " + scaleY);
+		Log.d(TAG, "overlaySizeRatio: " + overlaySizeRatio);
+
+		RectF sk_overlayRect = new RectF(overlayRect.left, overlayRect.top, overlayRect.right, overlayRect.bottom);
+		RectF sk_bitmapRect = new RectF(bitmapRect.left, bitmapRect.top, bitmapRect.right, bitmapRect.bottom);
+
+		float dx = sk_overlayRect.left;
+		float dy = sk_overlayRect.top;
+
+		sk_overlayRect.offset(- dx, - dy);
+		sk_bitmapRect.offset(- dx, - dy);
+
+		Log.d(TAG, String.format("sk_overlayRect(%s)", sk_overlayRect));
+		Log.d(TAG, String.format("sk_bitmapRect(%s)", sk_bitmapRect));
+
+		int targetHeight;
+		int targetWidth;
+		float scale;
+
+		if(overlaySizeRatio >= 1){
+			targetHeight = bitmap.getHeight();
+			targetWidth = (int) (overlaySizeRatio * targetHeight);
+			scale = bitmapRect.height()/overlayRect.height();
+		} else {
+			targetWidth = bitmap.getWidth();
+			targetHeight = (int) (overlaySizeRatio * targetWidth);
+			scale = bitmapRect.width()/overlayRect.width();
+		}
+
+		Bitmap result = Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888);
+
+		Log.d(TAG, "result size: " + result.getWidth() + "x" + result.getHeight());
+		Log.d(TAG, "scale: " + scale);
+
+		Canvas newCanvas = new Canvas(result);
+		newCanvas.drawColor(Color.RED);
+		Paint paint = new Paint();
+		paint.setAntiAlias(true);
+		paint.setFilterBitmap(true);
+		paint.setDither(true);
+
+		int count = newCanvas.save();
+		Matrix matrix = new Matrix();
+		matrix.postScale(scale, scale);
+		Log.v(TAG, "translate: " + (sk_bitmapRect.left/scaleX*scale*bitmapScaleX) + ", " + (sk_bitmapRect.top/scaleY*scale*bitmapScaleY));
+		matrix.postTranslate(sk_bitmapRect.left/scaleX*scale*bitmapScaleX, sk_bitmapRect.top/scaleY*scale*bitmapScaleY);
+
+		//newCanvas.concat(matrix);
+		newCanvas.scale(scale, scale);
+		newCanvas.drawBitmap(bitmap, 0, 0, paint);
+		newCanvas.restoreToCount(count);
+		newCanvas.drawBitmap(overlay, null, new Rect(0, 0, result.getWidth(), result.getHeight()), paint);
+
+		int max_size = 2048;
+		int w = result.getWidth();
+		int h = result.getHeight();
+		if(result.getWidth() > max_size || result.getHeight() > max_size) {
+			if(result.getWidth() >= result.getHeight()) {
+				w = 2048;
+				h = (int) (2048/((float)result.getWidth()/result.getHeight()));
+			} else {
+				h = 2048;
+				w = (int) (2048/((float)result.getHeight()/result.getWidth()));
+			}
+		}
+		return Bitmap.createScaledBitmap(result, w, h, true);
 	}
 }

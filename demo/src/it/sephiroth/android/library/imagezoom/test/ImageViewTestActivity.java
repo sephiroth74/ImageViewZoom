@@ -18,6 +18,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore.Images;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -70,7 +71,7 @@ public class ImageViewTestActivity extends Activity {
 					if (mImage instanceof ImageViewOverlay) {
 						ImageViewOverlay image = (ImageViewOverlay) mImage;
 						if (null != image.getOverlayDrawable()) {
-							Bitmap overlay = getOverlayBitmap();
+							Bitmap overlay = getOverlayBitmap("circle-black-medium.png");
 							image.updateImageOverlay(overlay);
 							return;
 						}
@@ -154,7 +155,7 @@ public class ImageViewTestActivity extends Activity {
 				}
 
 				Bitmap bitmap = DecodeUtils.decode(this, imageUri, size, size);
-				Bitmap overlay = getOverlayBitmap();
+				Bitmap overlay = getOverlayBitmap("circle-black-medium.png");
 
 				if (null != bitmap) {
 					Log.d(LOG_TAG, "screen size: " + metrics.widthPixels + "x" + metrics.heightPixels);
@@ -188,19 +189,26 @@ public class ImageViewTestActivity extends Activity {
 		}
 	}
 
-	private Bitmap getOverlayBitmap() {
+	private Bitmap getOverlayBitmap(String name) {
 		String file = null;
-		try {
-			String[] files = getAssets().list("images");
 
-			if (null != files && files.length > 0) {
-				int position = (int) (Math.random() * files.length);
-				file = files[position];
+		if (TextUtils.isEmpty(name)) {
+			try {
+				String[] files = getAssets().list("images");
+
+				if (null != files && files.length > 0) {
+					int position = (int) (Math.random() * files.length);
+					file = files[position];
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				return null;
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
 		}
+		else {
+			file = name;
+		}
+
 		try {
 			InputStream stream = getAssets().open("images/" + file);
 			try {

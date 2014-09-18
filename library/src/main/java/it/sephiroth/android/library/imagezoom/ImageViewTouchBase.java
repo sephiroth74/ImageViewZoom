@@ -210,8 +210,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
 	@Override
 	protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-		Log.i(TAG, "onLayout(" + left + ", " + top + ", " + right + ", " + bottom + ")");
-
 		if (DEBUG) {
 			Log.e(TAG, "onLayout: " + changed + ", bitmapChanged: " + mBitmapChanged + ", scaleChanged: " + mScaleTypeChanged);
 		}
