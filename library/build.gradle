@@ -4,7 +4,7 @@ apply plugin: 'signing'
 
 
 group 'it.sephiroth.android.library.imagezoom'
-version '2.1.0'
+version '2.1.1'
 
 
 dependencies {
@@ -12,8 +12,8 @@ dependencies {
 }
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "20.0.0"
+    compileSdkVersion 21
+    buildToolsVersion "21"
 
     defaultConfig {
         versionCode 1
