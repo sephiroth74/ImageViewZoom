@@ -69,7 +69,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 		FIT_IF_BIGGER
 	}
 
-	;
 
 
 	public static final String LOG_TAG = "ImageViewTouchBase";
