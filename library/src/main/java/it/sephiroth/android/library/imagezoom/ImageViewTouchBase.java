@@ -76,6 +76,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	protected static final boolean LOG_ENABLED = false;
 
 	public static final float ZOOM_INVALID = - 1f;
+	private static final int ZOOM_MAX_SCALE = 8;
 
 	protected Easing mEasing = new Cubic();
 	protected Matrix mBaseMatrix = new Matrix();
@@ -87,6 +88,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
 	private float mMaxZoom = ZOOM_INVALID;
 	private float mMinZoom = ZOOM_INVALID;
+	private int mMaxZoomScale = ZOOM_MAX_SCALE;
 
 	// true when min and max zoom are explicitly defined
 	private boolean mMaxZoomDefined;
@@ -566,7 +568,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
 		float fw = (float) drawable.getIntrinsicWidth() / (float) mThisWidth;
 		float fh = (float) drawable.getIntrinsicHeight() / (float) mThisHeight;
-		float scale = Math.max(fw, fh) * 8;
+		float scale = Math.max(fw, fh) * mMaxZoomScale;
 
 		if (LOG_ENABLED) {
 			Log.i(LOG_TAG, "computeMaxZoom: " + scale);
@@ -1018,5 +1020,9 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 	@Override
 	public void dispose() {
 		clear();
+	}
+
+	public void setMaxZoomScale(int maxScale){
+		this.mMaxZoomScale = maxScale;
 	}
 }
