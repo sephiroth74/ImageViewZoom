@@ -1,10 +1,10 @@
 
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 apply plugin: 'signing'
 
 
 group 'it.sephiroth.android.library.imagezoom'
-version '2.1.1'
+version '2.2.2-SNAPSHOT'
 
 
 dependencies {
@@ -13,13 +13,13 @@ dependencies {
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "21"
+    buildToolsVersion '22.0.1'
 
     defaultConfig {
         versionCode 1
         versionName version
         minSdkVersion 9
-        targetSdkVersion 19
+        targetSdkVersion 21
     }
 }
 
