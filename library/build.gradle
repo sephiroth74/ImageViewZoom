@@ -4,7 +4,7 @@ apply plugin: 'signing'
 
 
 group 'it.sephiroth.android.library.imagezoom'
-version '2.2.2-SNAPSHOT'
+version '2.2.2'
 
 
 dependencies {
