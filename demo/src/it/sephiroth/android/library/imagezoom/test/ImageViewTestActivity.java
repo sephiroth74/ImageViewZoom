@@ -12,11 +12,13 @@ import android.app.Activity;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore.Images;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -25,6 +27,9 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.Toast;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class ImageViewTestActivity extends Activity {
 
@@ -62,6 +67,15 @@ public class ImageViewTestActivity extends Activity {
 
 				@Override
 				public void onClick(View v) {
+
+					if (mImage instanceof ImageViewOverlay) {
+						ImageViewOverlay image = (ImageViewOverlay) mImage;
+						if (null != image.getOverlayDrawable()) {
+							Bitmap overlay = getOverlayBitmap("circle-black-medium.png");
+							image.updateImageOverlay(overlay);
+							return;
+						}
+					}
 					selectRandomImage(mCheckBox.isChecked());
 				}
 			}
@@ -134,18 +148,25 @@ public class ImageViewTestActivity extends Activity {
 				Log.d("image", imageUri.toString());
 
 				final DisplayMetrics metrics = getResources().getDisplayMetrics();
-				int size = (int) (Math.min(metrics.widthPixels, metrics.heightPixels) / 0.75);
+				int size = (int) (Math.min(metrics.widthPixels, metrics.heightPixels) / 0.55);
 
 				if (small) {
 					size /= 3;
 				}
 
 				Bitmap bitmap = DecodeUtils.decode(this, imageUri, size, size);
+				Bitmap overlay = getOverlayBitmap("circle-black-medium.png");
 
 				if (null != bitmap) {
 					Log.d(LOG_TAG, "screen size: " + metrics.widthPixels + "x" + metrics.heightPixels);
 					Log.d(LOG_TAG, "bitmap size: " + bitmap.getWidth() + "x" + bitmap.getHeight());
-					mImage.setImageBitmap(bitmap, null, - 1, 8f);
+
+					if (mImage instanceof ImageViewOverlay) {
+						((ImageViewOverlay) mImage).setImageBitmap(bitmap, overlay);
+					}
+					else {
+						mImage.setImageBitmap(bitmap, null, - 1, - 1);
+					}
 
 					mImage.setOnDrawableChangedListener(
 						new OnDrawableChangeListener() {
@@ -166,5 +187,38 @@ public class ImageViewTestActivity extends Activity {
 			c.close();
 			return;
 		}
+	}
+
+	private Bitmap getOverlayBitmap(String name) {
+		String file = null;
+
+		if (TextUtils.isEmpty(name)) {
+			try {
+				String[] files = getAssets().list("images");
+
+				if (null != files && files.length > 0) {
+					int position = (int) (Math.random() * files.length);
+					file = files[position];
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+		else {
+			file = name;
+		}
+
+		try {
+			InputStream stream = getAssets().open("images/" + file);
+			try {
+				return BitmapFactory.decodeStream(stream);
+			} finally {
+				stream.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 }
