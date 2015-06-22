@@ -31,14 +31,14 @@ The default display state is `DisplayState.NONE'.
 ##Usage (Maven)
     <dependency>
         <groupId>it.sephiroth.android.library.imagezoom</groupId>
-        <artifactId>library</artifactId>
-        <version>1.0.1</version>
+        <artifactId>imagezoom</artifactId>
+        <version>1.0.5</version>
     </dependency>
 
 ##Usage (Gradle)
 
 	dependencies {
-		compile 'it.sephiroth.android.library.imagezoom:library:+'
+		compile 'it.sephiroth.android.library.imagezoom:imagezoom:+'
 	}
 
 ##LICENSE

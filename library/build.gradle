@@ -1,62 +1,35 @@
 
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 apply plugin: 'signing'
 
+
 group 'it.sephiroth.android.library.imagezoom'
-version '1.0.3'
+version '2.2.2'
+
+
+dependencies {
+    compile 'com.nineoldandroids:library:2.4.0'
+}
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "18.1.1"
+    compileSdkVersion 21
+    buildToolsVersion '22.0.1'
 
     defaultConfig {
         versionCode 1
         versionName version
         minSdkVersion 9
-        targetSdkVersion 19
-    }
-
-    sourceSets {
-        main {
-            manifest.srcFile 'AndroidManifest.xml'
-            java.srcDirs = ['src']
-            resources.srcDirs = ['src']
-            aidl.srcDirs = ['src']
-            renderscript.srcDirs = ['src']
-            res.srcDirs = ['res']
-            assets.srcDirs = ['assets']
-        }
+        targetSdkVersion 21
     }
 }
-
-task displayInfo() {
-    doLast {
-        logger.lifecycle "  project name: ${project.name} (root: ${rootProject.name})"
-        logger.lifecycle "  project version: ${project.version}"
-        logger.lifecycle "  project group: ${project.group}"
-    }
-}
-
-project.ext.outJar = project.name + '-' + version + '.jar'
-
-task clearJar(type: Delete) {
-    delete 'build/libs/' + project.ext.outJar
-}
-
-task makeJar(type: Copy) {
-    from('build/bundles/release/')
-    into('build/libs/')
-    include('classes.jar')
-    rename ('classes.jar', project.ext.outJar)
-}
-
 
 def generatePom() {
     def pom = pom{
         project {
             name 'ImageViewZoom'
+            packaging 'aar'
             groupId project.group
-            artifactId project.name
+            artifactId 'imagezoom'
             version project.version
             description 'Android ImageView widget with zoom and pan capabilities'
             inceptionYear '2012'
@@ -90,15 +63,6 @@ def generatePom() {
                 }
             }
         }
-    }
-}
-
-task writePom {
-    ext.pomXml = file("pom.xml")
-    inputs.file(project.buildFile)
-    outputs.file(pomXml)
-    doLast {
-        generatePom().writeTo(pomXml)
     }
 }
 
@@ -157,24 +121,7 @@ task updateVersion {
     }
 }
 
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from android.sourceSets.main.allSource
-}
-
 signing {
+    required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
     sign configurations.archives
 }
-
-artifacts {
-    archives sourcesJar
-}
-
-dependencies {
-    compile 'it.sephiroth.android.library.easing:library:+'
-}
-
-clean.dependsOn(clearJar)
-uploadArchives.dependsOn(build)
-build.dependsOn(writePom, makeJar)
-preBuild.dependsOn(updateVersion)
