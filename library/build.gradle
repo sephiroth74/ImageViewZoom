@@ -1,5 +1,4 @@
 apply plugin: 'com.android.library'
-apply from: "https://gist.githubusercontent.com/sephiroth74/381981d26cd00fc28812/raw/b6e11cc8dcf8d2f99506a3a87c256305cc3b2015/local-mvn-push.gradle"
 
 group GROUP
 version VERSION_NAME
@@ -51,3 +50,5 @@ task updateVersion {
 
     }
 }
+
+apply from: "https://raw.githubusercontent.com/sephiroth74/gradle-mvn-push/master/gradle-mvn-push.gradle"

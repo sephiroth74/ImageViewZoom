@@ -44,12 +44,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
     public interface OnLayoutChangeListener {
         /**
          * Callback invoked when the layout bounds changed
-         *
-         * @param changed
-         * @param left
-         * @param top
-         * @param right
-         * @param bottom
          */
         void onLayoutChanged(boolean changed, int left, int top, int right, int bottom);
     }
@@ -152,6 +146,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
     /**
      * Change the display type
+     * @type
      */
     public void setDisplayType(DisplayType type) {
         if (type != mScaleType) {
