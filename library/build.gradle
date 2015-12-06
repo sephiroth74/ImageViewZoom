@@ -1,87 +1,20 @@
-
 apply plugin: 'com.android.library'
-apply plugin: 'signing'
+apply from: "https://gist.githubusercontent.com/sephiroth74/381981d26cd00fc28812/raw/b6e11cc8dcf8d2f99506a3a87c256305cc3b2015/local-mvn-push.gradle"
 
+group GROUP
+version VERSION_NAME
 
-group 'it.sephiroth.android.library.imagezoom'
-version '2.2.2'
-
-
-dependencies {
-    compile 'com.nineoldandroids:library:2.4.0'
-}
+dependencies {}
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion '22.0.1'
+    compileSdkVersion 23
+    buildToolsVersion '23.0.2'
 
     defaultConfig {
         versionCode 1
         versionName version
-        minSdkVersion 9
-        targetSdkVersion 21
-    }
-}
-
-def generatePom() {
-    def pom = pom{
-        project {
-            name 'ImageViewZoom'
-            packaging 'aar'
-            groupId project.group
-            artifactId 'imagezoom'
-            version project.version
-            description 'Android ImageView widget with zoom and pan capabilities'
-            inceptionYear '2012'
-            url 'http://blog.sephiroth.it'
-
-            licenses {
-                license {
-                    name 'MIT license'
-                    url 'http://opensource.org/licenses/mit-license.php'
-                    distribution 'repo'
-                }
-            }
-
-            scm {
-                url                 "https://github.com/sephiroth74/ImageViewZoom"
-                connection          "scm:git:git@github.com:sephiroth74/ImageViewZoom.git"
-                developerConnection "scm:git:git@github.com:sephiroth74/ImageViewZoom.git"
-            }
-
-
-            developers {
-                developer {
-                    id 'sephiroth74'
-                    name 'Alessandro Crugnola'
-                    email 'alessandro.crugnola@gmail.com'
-                    url 'http://blog.sephiroth.it'
-                    roles {
-                        role 'author'
-                        role 'developer'
-                    }
-                }
-            }
-        }
-    }
-}
-
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment {
-                MavenDeployment deployment -> signing.signPom(deployment)
-            }
-            pom = generatePom()
-
-            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: sonatypeUsername, password: sonatypePassword )
-            }
-
-            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots") {
-                authentication(userName: sonatypeUsername, password: sonatypePassword )
-            }
-        }
+        minSdkVersion 14
+        targetSdkVersion 23
     }
 }
 
@@ -89,14 +22,12 @@ task updateVersion {
     def source = new File("src/it/sephiroth/android/library/imagezoom/ImageViewTouchBase.java")
 
     onlyIf { task ->
-        
         def src = project.file(source)
         def text = src.text
-
         def pattern = /(?ms)^\s*public static final String VERSION = "($project.version)";$/
-        def matcher = ( text =~ pattern )
+        def matcher = (text =~ pattern)
 
-        if( matcher.size() > 0 ) {
+        if (matcher.size() > 0) {
             return false
         }
 
@@ -110,18 +41,13 @@ task updateVersion {
 
         def text = src.text
         def pattern = /(?ms)^(\s*)(public static final String VERSION = ")([0-9\-a-zA-Z\.]+)(";)$/
-        def matcher = ( text =~ pattern )
+        def matcher = (text =~ pattern)
 
-        if( matcher.size() > 0 ) {
+        if (matcher.size() > 0) {
             text = matcher.replaceFirst("\$1\$2" + project.version + "\$4")
             src.setText(text)
             println "Updated version of ImageViewTouchBase.java to ${project.version}"
         }
 
     }
-}
-
-signing {
-    required { has("release") && gradle.taskGraph.hasTask("uploadArchives") }
-    sign configurations.archives
 }

@@ -19,7 +19,9 @@ import android.view.ViewConfiguration;
 
 public class ImageViewTouch extends ImageViewTouchBase {
     static final float SCROLL_DELTA_THRESHOLD = 1.0f;
-    /** minimum time between a scale event and a valid fling event */
+    /**
+     * minimum time between a scale event and a valid fling event
+     */
     public static long MIN_FLING_DELTA_TIME = 150;
     private float mScaleFactor;
     protected ScaleGestureDetector mScaleDetector;
@@ -55,15 +57,15 @@ public class ImageViewTouch extends ImageViewTouchBase {
         setQuickScaleEnabled(false);
     }
 
-    @TargetApi (19)
+    @TargetApi(19)
     public void setQuickScaleEnabled(boolean value) {
         if (Build.VERSION.SDK_INT >= 19) {
             mScaleDetector.setQuickScaleEnabled(value);
         }
     }
 
-    @TargetApi (19)
-    @SuppressWarnings ("unused")
+    @TargetApi(19)
+    @SuppressWarnings("unused")
     public boolean getQuickScaleEnabled() {
         if (Build.VERSION.SDK_INT >= 19) {
             return mScaleDetector.isQuickScaleEnabled();
@@ -71,7 +73,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
         return false;
     }
 
-    @SuppressWarnings ("unused")
+    @SuppressWarnings("unused")
     public float getScaleFactor() {
         return mScaleFactor;
     }
@@ -258,7 +260,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
      *                  negative value means scroll from left to right
      * @return true if there is some more place to scroll, false - otherwise.
      */
-    @SuppressWarnings ("unused")
+    @SuppressWarnings("unused")
     public boolean canScroll(int direction) {
         RectF bitmapRect = getBitmapRect();
         updateRect(bitmapRect, mScrollPoint);
