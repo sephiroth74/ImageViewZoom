@@ -1,6 +1,6 @@
 ImageViewTouch for Android
 ===
-
+[![Badge](http://www.libtastic.com/static/osbadges/241.png)](http://www.libtastic.com/technology/241/)
 
 ImageViewTouch is an android `ImageView` widget with zoom and pan capabilities.
 This is an implementation of the ImageView widget used in the Gallery app of the Android opensource project.
