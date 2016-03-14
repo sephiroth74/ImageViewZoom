@@ -1,5 +1,8 @@
 package it.sephiroth.android.library.imagezoom;
 
+import android.animation.Animator;
+import android.animation.AnimatorSet;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -14,10 +17,6 @@ import android.util.Log;
 import android.view.ViewConfiguration;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
-
-import com.nineoldandroids.animation.Animator;
-import com.nineoldandroids.animation.AnimatorSet;
-import com.nineoldandroids.animation.ValueAnimator;
 
 import it.sephiroth.android.library.imagezoom.graphics.FastBitmapDrawable;
 import it.sephiroth.android.library.imagezoom.utils.IDisposable;
@@ -45,12 +44,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
     public interface OnLayoutChangeListener {
         /**
          * Callback invoked when the layout bounds changed
-         *
-         * @param changed
-         * @param left
-         * @param top
-         * @param right
-         * @param bottom
          */
         void onLayoutChanged(boolean changed, int left, int top, int right, int bottom);
     }
@@ -64,11 +57,17 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
      * @author alessandro
      */
     public enum DisplayType {
-        /** Image is not scaled by default */
+        /**
+         * Image is not scaled by default
+         */
         NONE,
-        /** Image will be always presented using this view's bounds */
+        /**
+         * Image will be always presented using this view's bounds
+         */
         FIT_TO_SCREEN,
-        /** Image will be scaled only if bigger than the bounds of this view */
+        /**
+         * Image will be scaled only if bigger than the bounds of this view
+         */
         FIT_IF_BIGGER
     }
 
@@ -147,6 +146,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
     /**
      * Change the display type
+     * @type
      */
     public void setDisplayType(DisplayType type) {
         if (type != mScaleType) {
@@ -360,8 +360,8 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
         if (DEBUG) {
             Log.i(
-                TAG,
-                "onConfigurationChanged. scale: " + getScale() + ", minScale: " + getMinScale() + ", mUserScaled: " + mUserScaled);
+                    TAG,
+                    "onConfigurationChanged. scale: " + getScale() + ", minScale: " + getMinScale() + ", mUserScaled: " + mUserScaled);
         }
 
         if (mUserScaled) {
@@ -672,7 +672,8 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
      *
      * @see {@link #setImageMatrix(Matrix)}
      */
-    protected void onImageMatrixChanged() {}
+    protected void onImageMatrixChanged() {
+    }
 
     /**
      * Returns the current image display matrix.<br />
@@ -737,7 +738,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
         return getValue(matrix, Matrix.MSCALE_X);
     }
 
-    @SuppressLint ("Override")
+    @SuppressLint("Override")
     public float getRotation() {
         return 0;
     }
@@ -861,11 +862,13 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
         center(true, true);
     }
 
-    @SuppressWarnings ("unused")
-    protected void onZoom(float scale) {}
+    @SuppressWarnings("unused")
+    protected void onZoom(float scale) {
+    }
 
-    @SuppressWarnings ("unused")
-    protected void onZoomAnimationCompleted(float scale) {}
+    @SuppressWarnings("unused")
+    protected void onZoomAnimationCompleted(float scale) {
+    }
 
     /**
      * Scrolls the view by the x and y amount
@@ -919,56 +922,56 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
         mCurrentAnimation = new AnimatorSet();
         ((AnimatorSet) mCurrentAnimation).playTogether(
-            anim1, anim2
-                                                      );
+                anim1, anim2
+        );
 
         mCurrentAnimation.setDuration(durationMs);
         mCurrentAnimation.setInterpolator(new DecelerateInterpolator());
         mCurrentAnimation.start();
 
         anim2.addUpdateListener(
-            new ValueAnimator.AnimatorUpdateListener() {
-                float oldValueX = 0;
-                float oldValueY = 0;
+                new ValueAnimator.AnimatorUpdateListener() {
+                    float oldValueX = 0;
+                    float oldValueY = 0;
 
-                @Override
-                public void onAnimationUpdate(final ValueAnimator animation) {
-                    float valueX = (Float) anim1.getAnimatedValue();
-                    float valueY = (Float) anim2.getAnimatedValue();
-                    panBy(valueX - oldValueX, valueY - oldValueY);
+                    @Override
+                    public void onAnimationUpdate(final ValueAnimator animation) {
+                        float valueX = (Float) anim1.getAnimatedValue();
+                        float valueY = (Float) anim2.getAnimatedValue();
+                        panBy(valueX - oldValueX, valueY - oldValueY);
 
-                    oldValueX = valueX;
-                    oldValueY = valueY;
-                }
-            }
-                               );
-
-        mCurrentAnimation.addListener(
-            new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(final Animator animation) {
-
-                }
-
-                @Override
-                public void onAnimationEnd(final Animator animation) {
-                    RectF centerRect = getCenter(mSuppMatrix, true, true);
-                    if (centerRect.left != 0 || centerRect.top != 0) {
-                        scrollBy(centerRect.left, centerRect.top);
+                        oldValueX = valueX;
+                        oldValueY = valueY;
                     }
                 }
+        );
 
-                @Override
-                public void onAnimationCancel(final Animator animation) {
+        mCurrentAnimation.addListener(
+                new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(final Animator animation) {
 
+                    }
+
+                    @Override
+                    public void onAnimationEnd(final Animator animation) {
+                        RectF centerRect = getCenter(mSuppMatrix, true, true);
+                        if (centerRect.left != 0 || centerRect.top != 0) {
+                            scrollBy(centerRect.left, centerRect.top);
+                        }
+                    }
+
+                    @Override
+                    public void onAnimationCancel(final Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(final Animator animation) {
+
+                    }
                 }
-
-                @Override
-                public void onAnimationRepeat(final Animator animation) {
-
-                }
-            }
-                                     );
+        );
     }
 
     protected void zoomTo(float scale, float centerX, float centerY, final long durationMs) {
@@ -992,13 +995,14 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
         animation.setDuration(durationMs);
         animation.setInterpolator(new DecelerateInterpolator(1.0f));
         animation.addUpdateListener(
-            new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(final ValueAnimator animation) {
-                    float value = (Float) animation.getAnimatedValue();
-                    zoomTo(value, destX, destY);
+                new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(final ValueAnimator animation) {
+                        float value = (Float) animation.getAnimatedValue();
+                        zoomTo(value, destX, destY);
+                    }
                 }
-            });
+        );
         animation.start();
     }
 
