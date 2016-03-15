@@ -28,6 +28,7 @@ import it.sephiroth.android.library.imagezoom.utils.IDisposable;
  */
 public abstract class ImageViewTouchBase extends ImageView implements IDisposable {
     public static final String VERSION = BuildConfig.VERSION_NAME;
+    public static final float MIN_SCALE_DIFF = 0.1f;
 
     public interface OnDrawableChangeListener {
         /**
@@ -39,16 +40,12 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
         void onDrawableChanged(Drawable drawable);
     }
 
-    ;
-
     public interface OnLayoutChangeListener {
         /**
          * Callback invoked when the layout bounds changed
          */
         void onLayoutChanged(boolean changed, int left, int top, int right, int bottom);
     }
-
-    ;
 
     /**
      * Use this to change the {@link ImageViewTouchBase#setDisplayType(DisplayType)} of
@@ -72,9 +69,9 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
     }
 
     public static final String TAG = "ImageViewTouchBase";
+    @SuppressWarnings ("checkstyle:staticvariablename")
     protected static boolean DEBUG = false;
     public static final float ZOOM_INVALID = -1f;
-    public static final long DEFAULT_ANIMATION_DURATION = 200;
     protected Matrix mBaseMatrix = new Matrix();
     protected Matrix mSuppMatrix = new Matrix();
     protected Matrix mNextMatrix;
@@ -146,6 +143,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
     /**
      * Change the display type
+     *
      * @type
      */
     public void setDisplayType(DisplayType type) {
@@ -185,6 +183,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
         mCenter.y = mViewPort.centerY();
     }
 
+    @SuppressWarnings ("checkstyle:cyclomaticcomplexity")
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         if (DEBUG) {
@@ -231,20 +230,20 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
                 float scale = 1;
 
                 // retrieve the old values
-                float old_default_scale = getDefaultScale(getDisplayType());
-                float old_matrix_scale = getScale(mBaseMatrix);
-                float old_scale = getScale();
-                float old_min_scale = Math.min(1f, 1f / old_matrix_scale);
+                float oldDefaultScale = getDefaultScale(getDisplayType());
+                float oldMatrixScale = getScale(mBaseMatrix);
+                float oldScale = getScale();
+                float oldMinScale = Math.min(1f, 1f / oldMatrixScale);
 
                 getProperBaseMatrix(drawable, mBaseMatrix, mViewPort);
 
-                float new_matrix_scale = getScale(mBaseMatrix);
+                float newMatrixScale = getScale(mBaseMatrix);
 
                 if (DEBUG) {
-                    Log.d(TAG, "old matrix scale: " + old_matrix_scale);
-                    Log.d(TAG, "new matrix scale: " + new_matrix_scale);
-                    Log.d(TAG, "old min scale: " + old_min_scale);
-                    Log.d(TAG, "old scale: " + old_scale);
+                    Log.d(TAG, "old matrix scale: " + oldMatrixScale);
+                    Log.d(TAG, "new matrix scale: " + newMatrixScale);
+                    Log.d(TAG, "old min scale: " + oldMinScale);
+                    Log.d(TAG, "old scale: " + oldScale);
                 }
 
                 // 1. bitmap changed or scaletype changed
@@ -294,8 +293,8 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
                         }
                         zoomTo(scale);
                     } else {
-                        if (Math.abs(old_scale - old_min_scale) > 0.1) {
-                            scale = (old_matrix_scale / new_matrix_scale) * old_scale;
+                        if (Math.abs(oldScale - oldMinScale) > MIN_SCALE_DIFF) {
+                            scale = (oldMatrixScale / newMatrixScale) * oldScale;
                         }
                         if (DEBUG) {
                             Log.v(TAG, "userScaled. scale=" + scale);
@@ -304,8 +303,8 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
                     }
 
                     if (DEBUG) {
-                        Log.d(TAG, "old min scale: " + old_default_scale);
-                        Log.d(TAG, "old scale: " + old_scale);
+                        Log.d(TAG, "old min scale: " + oldDefaultScale);
+                        Log.d(TAG, "old scale: " + oldScale);
                         Log.d(TAG, "new scale: " + scale);
                     }
                 }
@@ -360,12 +359,13 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
         if (DEBUG) {
             Log.i(
-                    TAG,
-                    "onConfigurationChanged. scale: " + getScale() + ", minScale: " + getMinScale() + ", mUserScaled: " + mUserScaled);
+                TAG,
+                "onConfigurationChanged. scale: " + getScale() + ", minScale: " + getMinScale() + ", mUserScaled: " + mUserScaled
+            );
         }
 
         if (mUserScaled) {
-            mUserScaled = Math.abs(getScale() - getMinScale()) > 0.1f;
+            mUserScaled = Math.abs(getScale() - getMinScale()) > MIN_SCALE_DIFF;
         }
 
         if (DEBUG) {
@@ -433,15 +433,15 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
     /**
      * @param bitmap
      * @param matrix
-     * @param min_zoom
-     * @param max_zoom
+     * @param minZoom
+     * @param maxZoom
      * @see #setImageDrawable(Drawable, Matrix, float, float)
      */
-    public void setImageBitmap(final Bitmap bitmap, Matrix matrix, float min_zoom, float max_zoom) {
+    public void setImageBitmap(final Bitmap bitmap, Matrix matrix, float minZoom, float maxZoom) {
         if (bitmap != null) {
-            setImageDrawable(new FastBitmapDrawable(bitmap), matrix, min_zoom, max_zoom);
+            setImageDrawable(new FastBitmapDrawable(bitmap), matrix, minZoom, maxZoom);
         } else {
-            setImageDrawable(null, matrix, min_zoom, max_zoom);
+            setImageDrawable(null, matrix, minZoom, maxZoom);
         }
     }
 
@@ -453,36 +453,36 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
     /**
      * Note: if the scaleType is FitToScreen then min_zoom must be <= 1 and max_zoom must be >= 1
      *
-     * @param drawable       the new drawable
-     * @param initial_matrix the optional initial display matrix
-     * @param min_zoom       the optional minimum scale, pass {@link #ZOOM_INVALID} to use the default min_zoom
-     * @param max_zoom       the optional maximum scale, pass {@link #ZOOM_INVALID} to use the default max_zoom
+     * @param drawable      the new drawable
+     * @param initialMatrix the optional initial display matrix
+     * @param minZoom       the optional minimum scale, pass {@link #ZOOM_INVALID} to use the default min_zoom
+     * @param maxZoom       the optional maximum scale, pass {@link #ZOOM_INVALID} to use the default max_zoom
      */
-    public void setImageDrawable(final Drawable drawable, final Matrix initial_matrix, final float min_zoom, final float max_zoom) {
+    public void setImageDrawable(final Drawable drawable, final Matrix initialMatrix, final float minZoom, final float maxZoom) {
         final int viewWidth = getWidth();
 
         if (viewWidth <= 0) {
             mLayoutRunnable = new Runnable() {
                 @Override
                 public void run() {
-                    setImageDrawable(drawable, initial_matrix, min_zoom, max_zoom);
+                    setImageDrawable(drawable, initialMatrix, minZoom, maxZoom);
                 }
             };
             return;
         }
-        _setImageDrawable(drawable, initial_matrix, min_zoom, max_zoom);
+        setImageDrawableInternal(drawable, initialMatrix, minZoom, maxZoom);
     }
 
-    protected void _setImageDrawable(final Drawable drawable, final Matrix initial_matrix, float min_zoom, float max_zoom) {
+    protected void setImageDrawableInternal(final Drawable drawable, final Matrix initialMatrix, float minZoom, float maxZoom) {
         mBaseMatrix.reset();
         super.setImageDrawable(drawable);
 
-        if (min_zoom != ZOOM_INVALID && max_zoom != ZOOM_INVALID) {
-            min_zoom = Math.min(min_zoom, max_zoom);
-            max_zoom = Math.max(min_zoom, max_zoom);
+        if (minZoom != ZOOM_INVALID && maxZoom != ZOOM_INVALID) {
+            minZoom = Math.min(minZoom, maxZoom);
+            maxZoom = Math.max(minZoom, maxZoom);
 
-            mMinZoom = min_zoom;
-            mMaxZoom = max_zoom;
+            mMinZoom = minZoom;
+            mMaxZoom = maxZoom;
 
             mMinZoomDefined = true;
             mMaxZoomDefined = true;
@@ -507,8 +507,8 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
             mMaxZoomDefined = false;
         }
 
-        if (initial_matrix != null) {
-            mNextMatrix = new Matrix(initial_matrix);
+        if (initialMatrix != null) {
+            mNextMatrix = new Matrix(initialMatrix);
         }
         if (DEBUG) {
             Log.v(TAG, "mMinZoom: " + mMinZoom + ", mMaxZoom: " + mMaxZoom);
@@ -738,7 +738,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
         return getValue(matrix, Matrix.MSCALE_X);
     }
 
-    @SuppressLint("Override")
+    @SuppressLint ("Override")
     public float getRotation() {
         return 0;
     }
@@ -862,11 +862,11 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
         center(true, true);
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings ("unused")
     protected void onZoom(float scale) {
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings ("unused")
     protected void onZoomAnimationCompleted(float scale) {
     }
 
@@ -895,16 +895,6 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
         if (bitmapRect == null) {
             return;
         }
-        //		if (bitmapRect.top >= 0 && bitmapRect.bottom <= mThisHeight) scrollRect.top = 0;
-        //		if (bitmapRect.left >= 0 && bitmapRect.right <= mThisWidth) scrollRect.left = 0;
-        //		if (bitmapRect.top + scrollRect.top >= 0 && bitmapRect.bottom > mThisHeight) scrollRect.top = (int) (0 -
-        // bitmapRect.top);
-        //		if (bitmapRect.bottom + scrollRect.top <= (mThisHeight - 0) && bitmapRect.top < 0) scrollRect.top = (int) (
-        // (mThisHeight - 0) - bitmapRect
-        // .bottom);
-        //		if (bitmapRect.left + scrollRect.left >= 0) scrollRect.left = (int) (0 - bitmapRect.left);
-        //		if (bitmapRect.right + scrollRect.left <= (mThisWidth - 0)) scrollRect.left = (int) ((mThisWidth - 0) - bitmapRect
-        // .right);
     }
 
     protected void stopAllAnimations() {
@@ -922,7 +912,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
 
         mCurrentAnimation = new AnimatorSet();
         ((AnimatorSet) mCurrentAnimation).playTogether(
-                anim1, anim2
+            anim1, anim2
         );
 
         mCurrentAnimation.setDuration(durationMs);
@@ -930,47 +920,47 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
         mCurrentAnimation.start();
 
         anim2.addUpdateListener(
-                new ValueAnimator.AnimatorUpdateListener() {
-                    float oldValueX = 0;
-                    float oldValueY = 0;
+            new ValueAnimator.AnimatorUpdateListener() {
+                float oldValueX = 0;
+                float oldValueY = 0;
 
-                    @Override
-                    public void onAnimationUpdate(final ValueAnimator animation) {
-                        float valueX = (Float) anim1.getAnimatedValue();
-                        float valueY = (Float) anim2.getAnimatedValue();
-                        panBy(valueX - oldValueX, valueY - oldValueY);
-
-                        oldValueX = valueX;
-                        oldValueY = valueY;
-                    }
+                @Override
+                public void onAnimationUpdate(final ValueAnimator animation) {
+                    float valueX = (Float) anim1.getAnimatedValue();
+                    float valueY = (Float) anim2.getAnimatedValue();
+                    panBy(valueX - oldValueX, valueY - oldValueY);
+                    oldValueX = valueX;
+                    oldValueY = valueY;
+                    postInvalidateOnAnimation();
                 }
+            }
         );
 
         mCurrentAnimation.addListener(
-                new Animator.AnimatorListener() {
-                    @Override
-                    public void onAnimationStart(final Animator animation) {
+            new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(final Animator animation) {
 
-                    }
+                }
 
-                    @Override
-                    public void onAnimationEnd(final Animator animation) {
-                        RectF centerRect = getCenter(mSuppMatrix, true, true);
-                        if (centerRect.left != 0 || centerRect.top != 0) {
-                            scrollBy(centerRect.left, centerRect.top);
-                        }
-                    }
-
-                    @Override
-                    public void onAnimationCancel(final Animator animation) {
-
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(final Animator animation) {
-
+                @Override
+                public void onAnimationEnd(final Animator animation) {
+                    RectF centerRect = getCenter(mSuppMatrix, true, true);
+                    if (centerRect.left != 0 || centerRect.top != 0) {
+                        scrollBy(centerRect.left, centerRect.top);
                     }
                 }
+
+                @Override
+                public void onAnimationCancel(final Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(final Animator animation) {
+
+                }
+            }
         );
     }
 
@@ -995,13 +985,14 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
         animation.setDuration(durationMs);
         animation.setInterpolator(new DecelerateInterpolator(1.0f));
         animation.addUpdateListener(
-                new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(final ValueAnimator animation) {
-                        float value = (Float) animation.getAnimatedValue();
-                        zoomTo(value, destX, destY);
-                    }
+            new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(final ValueAnimator animation) {
+                    float value = (Float) animation.getAnimatedValue();
+                    zoomTo(value, destX, destY);
+                    postInvalidateOnAnimation();
                 }
+            }
         );
         animation.start();
     }

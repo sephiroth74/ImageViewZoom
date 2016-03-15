@@ -2,10 +2,8 @@ package it.sephiroth.android.library.imagezoom;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.SystemClock;
 import android.util.AttributeSet;
@@ -22,7 +20,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
     /**
      * minimum time between a scale event and a valid fling event
      */
-    public static long MIN_FLING_DELTA_TIME = 150;
+    public static final long MIN_FLING_DELTA_TIME = 150;
     private float mScaleFactor;
     protected ScaleGestureDetector mScaleDetector;
     protected GestureDetector mGestureDetector;
@@ -57,15 +55,15 @@ public class ImageViewTouch extends ImageViewTouchBase {
         setQuickScaleEnabled(false);
     }
 
-    @TargetApi(19)
+    @TargetApi (19)
     public void setQuickScaleEnabled(boolean value) {
         if (Build.VERSION.SDK_INT >= 19) {
             mScaleDetector.setQuickScaleEnabled(value);
         }
     }
 
-    @TargetApi(19)
-    @SuppressWarnings("unused")
+    @TargetApi (19)
+    @SuppressWarnings ("unused")
     public boolean getQuickScaleEnabled() {
         if (Build.VERSION.SDK_INT >= 19) {
             return mScaleDetector.isQuickScaleEnabled();
@@ -73,7 +71,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
         return false;
     }
 
-    @SuppressWarnings("unused")
+    @SuppressWarnings ("unused")
     public float getScaleFactor() {
         return mScaleFactor;
     }
@@ -111,11 +109,6 @@ public class ImageViewTouch extends ImageViewTouchBase {
     }
 
     @Override
-    protected void _setImageDrawable(final Drawable drawable, final Matrix initial_matrix, float min_zoom, float max_zoom) {
-        super._setImageDrawable(drawable, initial_matrix, min_zoom, max_zoom);
-    }
-
-    @Override
     protected void onLayoutChanged(final int left, final int top, final int right, final int bottom) {
         super.onLayoutChanged(left, top, right, bottom);
         Log.v(TAG, "min: " + getMinScale() + ", max: " + getMaxScale() + ", result: " + (getMaxScale() - getMinScale()) / 2f);
@@ -145,6 +138,8 @@ public class ImageViewTouch extends ImageViewTouchBase {
         switch (action) {
             case MotionEvent.ACTION_UP:
                 return onUp(event);
+            default:
+                break;
         }
         return true;
     }
@@ -260,7 +255,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
      *                  negative value means scroll from left to right
      * @return true if there is some more place to scroll, false - otherwise.
      */
-    @SuppressWarnings("unused")
+    @SuppressWarnings ("unused")
     public boolean canScroll(int direction) {
         RectF bitmapRect = getBitmapRect();
         updateRect(bitmapRect, mScrollPoint);
@@ -401,7 +396,7 @@ public class ImageViewTouch extends ImageViewTouchBase {
             if (mScaleEnabled) {
                 if (mScaled && span != 0) {
                     mUserScaled = true;
-                    targetScale = Math.min(getMaxScale(), Math.max(targetScale, getMinScale() - 0.1f));
+                    targetScale = Math.min(getMaxScale(), Math.max(targetScale, getMinScale() - MIN_SCALE_DIFF));
                     zoomTo(targetScale, detector.getFocusX(), detector.getFocusY());
                     mDoubleTapDirection = 1;
                     invalidate();

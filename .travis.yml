@@ -1,0 +1,30 @@
+language: android
+
+jdk:
+    - oraclejdk8
+
+android:
+  components:
+    - tools
+    - build-tools-23.0.2
+    - android-23
+    - extra-android-m2repository
+    - extra-google-m2repository
+    - extra-android-support
+
+notifications:
+    email:
+        - alessandro.crugnola@gmail.com
+
+cache: false
+sudo: false
+
+install:
+    # Ensure Gradle wrapper is executable, download wrapper and show version
+    - chmod +x ./gradlew; ls -l gradlew; ./gradlew wrapper -v
+
+    # Download and show android dependencies
+    - ./gradlew androidDependencies
+
+script:
+    - ./gradlew library:check library:assemble

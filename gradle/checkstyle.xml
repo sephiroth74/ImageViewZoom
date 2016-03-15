@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE module PUBLIC
+    "-//Puppy Crawl//DTD Check Configuration 1.3//EN" "http://www.puppycrawl.com/dtds/configuration_1_3.dtd"><!--
+    Checkstyle-Configuration: Android Checkstyle
+    Description: none
+-->
+<module name="Checker">
+    <!--<property name="severity" value="warning" />-->
+
+    <module name="FileLength">
+        <property name="max" value="3000" />
+    </module>
+
+    <module name="FileTabCharacter" />
+
+    <!-- Trailing spaces -->
+    <module name="RegexpSingleline">
+        <property name="format" value="\s+$" />
+        <property name="message" value="Line has trailing spaces." />
+    </module>
+
+    <!-- Space after 'for' and 'if' -->
+    <module name="RegexpSingleline">
+        <property name="format" value="^\s*(for|if)[^ ]\(" />
+        <property name="message" value="Space needed before opening parenthesis." />
+    </module>
+
+    <!-- For each spacing -->
+    <module name="RegexpSingleline">
+        <property name="format" value="^\s*for \(.*?([^ ]:|:[^ ])" />
+        <property name="message" value="Space needed around ':' character." />
+    </module>
+
+    <module name="NewlineAtEndOfFile">
+        <property name="severity" value="ignore" />
+        <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit" />
+    </module>
+
+    <!-- exclusions -->
+    <module name="SuppressionCommentFilter">
+        <property name="offCommentFormat" value="CHECKSTYLE.OFF\: ([\w\|]+)" />
+        <property name="onCommentFormat" value="CHECKSTYLE.ON\: ([\w\|]+)" />
+        <property name="checkFormat" value="$1" />
+    </module>
+
+    <module name="SuppressWarningsFilter" />
+
+    <module name="Translation" />
+
+    <module name="TreeWalker">
+        <property name="cacheFile" value="target/cachefile" />
+
+        <property name="tabWidth" value="4" />
+
+        <module name="ArrayTypeStyle" />
+        <module name="AvoidNestedBlocks" />
+        <module name="AvoidStarImport" />
+        <module name="ConstantName">
+            <property name="format" value="^(_)?[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$" />
+        </module>
+        <module name="CovariantEquals" />
+        <module name="CyclomaticComplexity">
+            <property name="max" value="15" />
+        </module>
+        <module name="DesignForExtension">
+            <property name="severity" value="ignore" />
+            <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit" />
+        </module>
+        <!--<module name="EmptyBlock" />-->
+        <module name="EmptyBlock">
+            <property name="option" value="text" />
+            <property name="tokens"
+                value="LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_IF, LITERAL_FOR, LITERAL_TRY, LITERAL_WHILE, INSTANCE_INIT, STATIC_INIT" />
+        </module>
+        <module name="EmptyForIteratorPad" />
+        <module name="EmptyStatement" />
+        <module name="EqualsHashCode" />
+        <module name="FileContentsHolder" />
+        <module name="FinalClass" />
+        <module name="FinalParameters">
+            <property name="severity" value="ignore" />
+            <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit" />
+        </module>
+        <module name="GenericWhitespace" />
+        <module name="HideUtilityClassConstructor" />
+        <module name="IllegalImport" />
+        <module name="IllegalInstantiation" />
+        <module name="InnerAssignment" />
+        <!--<module name="InterfaceIsType" />-->
+        <!--<module name="InnerTypeLast" />-->
+        <module name="LeftCurly" />
+        <module name="LineLength">
+            <property name="max" value="132" />
+        </module>
+        <module name="LocalFinalVariableName" />
+        <module name="LocalVariableName" />
+
+        <!-- Checks that there are no "magic numbers", where a magic number is a numeric literal that is not defined as a constant. -->
+        <module name="MagicNumber">
+            <property name="tokens" value="NUM_DOUBLE, NUM_FLOAT" />
+            <property name="ignoreNumbers" value="0, 0.5, -0.5, 1, -1, -2, 2" />
+        </module>
+
+        <module name="MemberName" />
+        <module name="MethodLength">
+            <property name="tokens" value="METHOD_DEF" />
+            <property name="max" value="200" />
+            <property name="countEmpty" value="false" />
+        </module>
+        <module name="MethodName" />
+        <module name="MethodParamPad" />
+        <module name="MissingSwitchDefault" />
+        <module name="ModifierOrder" />
+        <module name="NeedBraces">
+            <property name="tokens" value="LITERAL_DO, LITERAL_ELSE, LITERAL_FOR, LITERAL_WHILE" />
+        </module>
+        <module name="NoWhitespaceAfter">
+            <!--<property name="tokens" value="BNOT,DEC,DOT,INC,LNOT,UNARY_MINUS,UNARY_PLUS" />-->
+        </module>
+        <module name="NoWhitespaceBefore" />
+        <module name="OperatorWrap" />
+        <module name="PackageName" />
+        <module name="ParameterName" />
+        <module name="ParameterNumber">
+            <property name="max" value="12" />
+        </module>
+        <module name="ParenPad" />
+        <module name="RightCurly" />
+        <module name="RedundantImport" />
+        <module name="RedundantModifier" />
+        <module name="SimplifyBooleanExpression" />
+        <module name="SimplifyBooleanReturn" />
+        <module name="StaticVariableName" />
+        <module name="StringLiteralEquality" />
+        <module name="SuperFinalize" />
+        <module name="SuppressWarningsHolder" />
+        <module name="TodoComment">
+            <property name="severity" value="ignore" />
+            <metadata name="net.sf.eclipsecs.core.lastEnabledSeverity" value="inherit" />
+        </module>
+        <module name="TypecastParenPad" />
+        <module name="TypeName" />
+        <module name="UnusedImports">
+            <property name="processJavadoc" value="true" />
+        </module>
+        <module name="UpperEll" />
+        <module name="WhitespaceAfter" />
+        <module name="WhitespaceAround">
+            <property name="allowEmptyMethods" value="true" />
+        </module>
+
+        <!-- <module name="HiddenField"/> -->
+    </module>
+</module>

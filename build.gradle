@@ -5,26 +5,20 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:+'
+        classpath 'com.android.tools.build:gradle:2.1.0-alpha2'
     }
 }
 
 allprojects {
-    apply plugin: 'maven'
-    apply plugin: 'maven-publish'
+    version = VERSION_NAME
+    group = GROUP
 
     repositories {
+        jcenter()
         mavenCentral()
-        mavenLocal()
-        maven {
-            url uri("https://oss.sonatype.org/content/repositories/snapshots")
-        }
-        maven {
-            url uri("https://oss.sonatype.org/content/repositories/releases")
-        }
     }
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.9'
+    gradleVersion = '2.11'
 }

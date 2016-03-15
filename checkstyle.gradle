@@ -1,0 +1,26 @@
+apply plugin: 'checkstyle'
+
+checkstyle {
+    toolVersion '6.8'
+    configFile rootProject.file('gradle/checkstyle.xml')
+    showViolations true
+    configProperties = [
+            'checkstyle.cache.file': rootProject.file('build/checkstyle.cache'),
+    ]
+}
+
+def variants = (project.plugins.hasPlugin('android-library') ?
+        project.android.libraryVariants :
+        project.android.applicationVariants)
+
+variants.all { variant ->
+    def name = variant.buildType.name
+
+    def checkstyle = project.tasks.create "checkstyle${name.capitalize()}", Checkstyle
+    checkstyle.dependsOn variant.javaCompile
+    checkstyle.source variant.javaCompile.source
+    checkstyle.classpath = project.fileTree(variant.javaCompile.destinationDir)
+    checkstyle.exclude('**/BuildConfig.java')
+    checkstyle.exclude('**/R.java')
+    project.tasks.getByName("check").dependsOn checkstyle
+}

@@ -6,49 +6,35 @@ version VERSION_NAME
 dependencies {}
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.2'
+    compileSdkVersion ANDROID_BUILD_SDK_VERSION as int
+    buildToolsVersion ANDROID_BUILD_TOOLS_VERSION
 
     defaultConfig {
         versionCode 1
         versionName version
-        minSdkVersion 14
-        targetSdkVersion 23
+        minSdkVersion 16
+        targetSdkVersion ANDROID_BUILD_TARGET_SDK_VERSION as int
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+
+    lintOptions {
+        disable 'IconMissingDensityFolder'
+        disable 'UnusedResources'
+        disable 'NewApi'
+        checkReleaseBuilds true
+        htmlReport true
+        xmlReport false
+        textOutput 'stdout'
+        textReport true
+        abortOnError true
     }
 }
 
-task updateVersion {
-    def source = new File("src/it/sephiroth/android/library/imagezoom/ImageViewTouchBase.java")
+apply from: rootProject.file('checkstyle.gradle')
+apply from: 'https://raw.githubusercontent.com/sephiroth74/gradle-mvn-push/master/gradle-mvn-push.gradle'
 
-    onlyIf { task ->
-        def src = project.file(source)
-        def text = src.text
-        def pattern = /(?ms)^\s*public static final String VERSION = "($project.version)";$/
-        def matcher = (text =~ pattern)
-
-        if (matcher.size() > 0) {
-            return false
-        }
-
-        return true
-    }
-
-    doLast {
-        def src = project.file(source)
-
-        println "Version mismatch. updating version to ${project.version}"
-
-        def text = src.text
-        def pattern = /(?ms)^(\s*)(public static final String VERSION = ")([0-9\-a-zA-Z\.]+)(";)$/
-        def matcher = (text =~ pattern)
-
-        if (matcher.size() > 0) {
-            text = matcher.replaceFirst("\$1\$2" + project.version + "\$4")
-            src.setText(text)
-            println "Updated version of ImageViewTouchBase.java to ${project.version}"
-        }
-
-    }
-}
-
-apply from: "https://raw.githubusercontent.com/sephiroth74/gradle-mvn-push/master/gradle-mvn-push.gradle"
+uploadArchives.dependsOn 'check'
