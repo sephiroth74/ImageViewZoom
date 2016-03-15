@@ -28,3 +28,4 @@ install:
 
 script:
     - ./gradlew library:check library:assemble
+
