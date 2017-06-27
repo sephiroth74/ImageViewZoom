@@ -26,5 +26,6 @@ android {
             aidl.srcDirs = ['src']
         }
     }
+    buildToolsVersion '25.0.0'
 }
 
