@@ -418,12 +418,11 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
             return Math.min(1f, 1f / getScale(mBaseMatrix));
         } else if (type == DisplayType.FIT_HEIGHT) {
             // scale to match the device height
-            return getHeight() / (getYScale(mBaseMatrix) *mBitmapRect.height());
+            return getHeight() / (getYScale(mBaseMatrix) * mBitmapRect.height());
         } else if (type == DisplayType.FIT_WIDTH) {
             // scale to match the device width
-            return getWidth() / (getXScale(mBaseMatrix) *mBitmapRect.width());
-        }
-        else {
+            return getWidth() / (getXScale(mBaseMatrix) * mBitmapRect.width());
+        } else {
             // no scale
             return 1f / getScale(mBaseMatrix);
         }
