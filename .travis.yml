@@ -7,10 +7,11 @@ android:
   components:
     - tools
     - build-tools-25.0.3
-    - android-25
+    - platform-tools
     - extra-android-m2repository
     - extra-google-m2repository
     - extra-android-support
+    - android-25
 
 notifications:
     email:
