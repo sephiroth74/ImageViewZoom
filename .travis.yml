@@ -20,11 +20,19 @@ cache: false
 sudo: false
 
 install:
-    # Ensure Gradle wrapper is executable, download wrapper and show version
-    - chmod +x ./gradlew; ls -l gradlew; ./gradlew wrapper -v
+  # Accept all the licenses
+  - echo y | android update sdk -u -a -t tools
+  - echo y | android update sdk -u -a -t platform-tools
+  - echo y | android update sdk -u -a -t build-tools-25.0.2
+  - echo y | android update sdk -u -a -t android-25
+  - echo y | android update sdk -u -a -t extra-google-m2repository
+  - echo y | android update sdk -u -a -t extra-android-m2repository
 
-    # Download and show android dependencies
-    - ./gradlew androidDependencies
+  # Ensure Gradle wrapper is executable, download wrapper and show version
+  - chmod +x ./gradlew; ls -l gradlew; ./gradlew wrapper -v
+
+  # Download and show android dependencies
+  - ./gradlew androidDependencies
 
 script:
     - ./gradlew library:check library:assemble
