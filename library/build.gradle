@@ -32,7 +32,6 @@ android {
         textReport true
         abortOnError true
     }
-    buildToolsVersion '25.0.0'
 }
 
 apply from: rootProject.file('checkstyle.gradle')
