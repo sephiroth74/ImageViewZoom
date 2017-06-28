@@ -65,7 +65,15 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
         /**
          * Image will be scaled only if bigger than the bounds of this view
          */
-        FIT_IF_BIGGER
+        FIT_IF_BIGGER,
+        /**
+         * Image will be scaled to fit the Height of the device
+         */
+        FIT_HEIGHT,
+        /**
+         * Image will be scaled to fit the Width of the device
+         */
+        FIT_WIDTH
     }
 
     public static final String TAG = "ImageViewTouchBase";
@@ -408,6 +416,12 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
         } else if (type == DisplayType.FIT_IF_BIGGER) {
             // normal scale if smaller, fit to screen otherwise
             return Math.min(1f, 1f / getScale(mBaseMatrix));
+        } else if (type == DisplayType.FIT_HEIGHT) {
+            // scale to match the device height
+            return getHeight() / (getYScale(mBaseMatrix) * mBitmapRect.height());
+        } else if (type == DisplayType.FIT_WIDTH) {
+            // scale to match the device width
+            return getWidth() / (getXScale(mBaseMatrix) * mBitmapRect.width());
         } else {
             // no scale
             return 1f / getScale(mBaseMatrix);
@@ -732,6 +746,24 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
         Matrix m = getImageViewMatrix(supportMatrix);
         m.mapRect(mBitmapRectTmp, mBitmapRect);
         return mBitmapRectTmp;
+    }
+
+    /**
+     * Get the Y Scale of the matrix for Fit Scale Calculation
+     * @param matrix {@link Matrix} Bitmap Matrix
+     * @return (float) Scale
+     */
+    protected float getYScale(Matrix matrix) {
+        return getValue(matrix, Matrix.MSCALE_Y);
+    }
+
+    /**
+     * Get the X Scale of the matrix for Fit Scale Calculation
+     * @param matrix {@link Matrix} Bitmap Matrix
+     * @return (float) Scale
+     */
+    protected float getXScale(Matrix matrix) {
+        return getValue(matrix, Matrix.MSCALE_X);
     }
 
     protected float getScale(Matrix matrix) {
