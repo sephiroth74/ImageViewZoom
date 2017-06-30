@@ -29,6 +29,8 @@ The initial display state can be set, using `public void setDisplayType( Display
 
 * `DisplayType.FIT_TO_SCREEN`: The image loaded will always fit the current view's bounds.
 * `DisplayType.NONE`: The image will be presented with its current dimensions if smaller than the image bounds, otherwise it will be scaled to fit its contents inside the screen.
+* `DisplayType.FIT_HEIGHT`: The image loaded will always fit the height of the current view.
+* `DisplayType.FIT_WIDTH`: The image loaded will always fit the width of the current view. 
 
 The default display state is `DisplayState.NONE'.
 
@@ -37,7 +39,7 @@ The default display state is `DisplayState.NONE'.
     <dependency>
         <groupId>it.sephiroth.android.library.imagezoom</groupId>
         <artifactId>imagezoom</artifactId>
-        <version>1.0.5</version>
+        <version>2.3.0</version>
     </dependency>
 
 ##Usage (Gradle)
