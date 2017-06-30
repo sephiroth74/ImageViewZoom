@@ -248,6 +248,29 @@ public class ImageViewTouch extends ImageViewTouchBase {
         return !mViewPort.contains(bitmapRect);
     }
 
+    @Override
+    public boolean canScrollHorizontally(int direction) {
+        return canScroll(-direction);
+    }
+
+    @Override
+    public boolean canScrollVertically(int direction) {
+        RectF bitmapRect = getBitmapRect();
+        updateRect( bitmapRect, mScrollRect );
+        Rect imageViewRect = new Rect();
+        getGlobalVisibleRect( imageViewRect );
+
+        if( null == bitmapRect ) {
+            return false;
+        }
+
+        if ( bitmapRect.bottom >= imageViewRect.bottom && direction < 0 ) {
+            return Math.abs( bitmapRect.bottom - imageViewRect.bottom ) > SCROLL_DELTA_THRESHOLD;
+        }
+
+        return Math.abs( bitmapRect.top - mScrollRect.top ) > SCROLL_DELTA_THRESHOLD;
+    }
+
     /**
      * Determines whether this ImageViewTouch can be scrolled.
      *
