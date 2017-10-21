@@ -3,8 +3,6 @@ apply plugin: 'com.android.library'
 group GROUP
 version VERSION_NAME
 
-dependencies {}
-
 android {
     compileSdkVersion ANDROID_BUILD_SDK_VERSION as int
     buildToolsVersion ANDROID_BUILD_TOOLS_VERSION
@@ -12,7 +10,7 @@ android {
     defaultConfig {
         versionCode 1
         versionName version
-        minSdkVersion 16
+        minSdkVersion 14
         targetSdkVersion ANDROID_BUILD_TARGET_SDK_VERSION as int
     }
 
@@ -32,6 +30,10 @@ android {
         textReport true
         abortOnError true
     }
+}
+
+dependencies {
+    implementation "com.android.support:support-compat:26.1.0"
 }
 
 apply from: rootProject.file('checkstyle.gradle')

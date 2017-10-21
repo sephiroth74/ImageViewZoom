@@ -12,6 +12,7 @@ import android.graphics.Matrix;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.ViewConfiguration;
@@ -963,7 +964,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
                     panBy(valueX - oldValueX, valueY - oldValueY);
                     oldValueX = valueX;
                     oldValueY = valueY;
-                    postInvalidateOnAnimation();
+                    ViewCompat.postInvalidateOnAnimation(ImageViewTouchBase.this);
                 }
             }
         );
@@ -1022,7 +1023,7 @@ public abstract class ImageViewTouchBase extends ImageView implements IDisposabl
                 public void onAnimationUpdate(final ValueAnimator animation) {
                     float value = (Float) animation.getAnimatedValue();
                     zoomTo(value, destX, destY);
-                    postInvalidateOnAnimation();
+                    ViewCompat.postInvalidateOnAnimation(ImageViewTouchBase.this);
                 }
             }
         );
