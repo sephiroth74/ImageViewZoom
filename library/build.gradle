@@ -33,7 +33,7 @@ android {
 }
 
 dependencies {
-    implementation "com.android.support:support-compat:26.1.0"
+    implementation "com.android.support:support-compat:$ANDROID_SUPPORT_LIB_VERSION"
 }
 
 apply from: rootProject.file('checkstyle.gradle')

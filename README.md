@@ -39,7 +39,7 @@ The default display state is `DisplayState.NONE'.
     <dependency>
         <groupId>it.sephiroth.android.library.imagezoom</groupId>
         <artifactId>imagezoom</artifactId>
-        <version>2.3.0</version>
+        <version>2.3.1</version>
     </dependency>
 
 ##Usage (Gradle)
